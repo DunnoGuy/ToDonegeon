@@ -1,0 +1,16 @@
+{
+    "name": "ToDonegeon.Validation",
+    "rootNamespace": "ToDonegeon.Validation",
+    "references": [
+        "ToDonegeon.Generation"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": true
+}
