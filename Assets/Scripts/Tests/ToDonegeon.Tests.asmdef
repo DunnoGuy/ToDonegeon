@@ -5,7 +5,8 @@
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
         "ToDonegeon.Generation",
-        "ToDonegeon.Validation"
+        "ToDonegeon.Validation",
+        "ToDonegeon.Pipeline"
     ],
     "includePlatforms": [
         "Editor"

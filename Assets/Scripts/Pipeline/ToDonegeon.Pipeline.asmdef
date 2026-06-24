@@ -1,0 +1,17 @@
+{
+    "name": "ToDonegeon.Pipeline",
+    "rootNamespace": "ToDonegeon.Pipeline",
+    "references": [
+        "ToDonegeon.Generation",
+        "ToDonegeon.Validation"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": true
+}
