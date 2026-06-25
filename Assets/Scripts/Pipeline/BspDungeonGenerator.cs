@@ -15,11 +15,13 @@ namespace ToDonegeon.Pipeline
         private readonly RoomCarver _carver;
         private readonly CorridorConnector _connector;
         private readonly ConnectivityValidator _validator;
+        private readonly DungeonPopulator _populator;
         private readonly int _maxAttempts;
 
         public BspDungeonGenerator(
             BspSettings bspSettings = null,
             RoomCarverSettings carverSettings = null,
+            PopulatorSettings populatorSettings = null,
             int maxAttempts = DefaultMaxAttempts)
         {
             if (maxAttempts < 1)
@@ -29,6 +31,7 @@ namespace ToDonegeon.Pipeline
             _carver = new RoomCarver(carverSettings ?? new RoomCarverSettings());
             _connector = new CorridorConnector();
             _validator = new ConnectivityValidator();
+            _populator = new DungeonPopulator(populatorSettings ?? new PopulatorSettings());
             _maxAttempts = maxAttempts;
         }
 
@@ -64,7 +67,11 @@ namespace ToDonegeon.Pipeline
             GridConnectivity connectivity = _validator.ValidateGrid(grid, start);
             bool entranceExitConnected = entrance != null && exit != null && graph.AreConnected(entrance, exit);
 
-            return new Dungeon(seed, grid, tree, rooms, links, graph, entrance, exit, connectivity, entranceExitConnected);
+            // Populated last, over the validated geometry, so placement can assume traversability
+            IReadOnlyList<Entity> entities = _populator.Populate(grid, rooms, links, entrance, exit, rng);
+
+            return new Dungeon(
+                seed, grid, tree, rooms, links, graph, entrance, exit, connectivity, entranceExitConnected, entities);
         }
 
         private static void MarkEndpoints(Grid grid, Room entrance, Room exit)

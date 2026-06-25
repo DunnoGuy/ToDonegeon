@@ -17,10 +17,12 @@ namespace ToDonegeon.Pipeline
         public Room Exit { get; }
         public GridConnectivity Connectivity { get; }
         public bool EntranceExitConnected { get; }
+        public IReadOnlyList<Entity> Entities { get; }
 
         public Dungeon(
             int seed, Grid grid, BspTree tree, IReadOnlyList<Room> rooms, IReadOnlyList<RoomLink> links,
-            RoomGraph graph, Room entrance, Room exit, GridConnectivity connectivity, bool entranceExitConnected)
+            RoomGraph graph, Room entrance, Room exit, GridConnectivity connectivity, bool entranceExitConnected,
+            IReadOnlyList<Entity> entities)
         {
             Seed = seed;
             Grid = grid;
@@ -32,6 +34,7 @@ namespace ToDonegeon.Pipeline
             Exit = exit;
             Connectivity = connectivity;
             EntranceExitConnected = entranceExitConnected;
+            Entities = entities;
         }
 
         public bool IsValid => Connectivity.IsFullyConnected && EntranceExitConnected;
