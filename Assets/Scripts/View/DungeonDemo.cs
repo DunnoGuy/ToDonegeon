@@ -28,8 +28,14 @@ namespace ToDonegeon.View
         [Range(0.1f, 1f)]
         [SerializeField] private float _minFillRatio = RoomCarverSettings.DefaultMinFillRatio;
 
+        [Header("Populate")]
+        [SerializeField] private int _maxChests = PopulatorSettings.DefaultMaxChests;
+        [SerializeField] private int _maxEnemiesPerRoom = PopulatorSettings.DefaultMaxEnemiesPerRoom;
+        [SerializeField] private int _difficultyTier = PopulatorSettings.DefaultDifficultyTier;
+
         [Header("References")]
         [SerializeField] private DungeonRenderer _renderer;
+        [SerializeField] private EntitySpawner _entitySpawner;
         [SerializeField] private Camera _camera;
 
         [Header("Controls")]
@@ -38,17 +44,21 @@ namespace ToDonegeon.View
         private const float CameraDepth = -10f;
         private const float CameraPadding = 1f;
         private const float PanelWidth = 320f;
-        private const float PanelHeight = 168f;
+        private const float PanelHeight = 188f;
         private const float PanelMargin = 10f;
 
         private static readonly System.Random SeedSource = new System.Random();
 
         private Dungeon _dungeon;
         private string _error;
+        private int _bossCount;
+        private int _chestCount;
+        private int _enemyCount;
 
         private void Start()
         {
             if (_renderer == null) _renderer = GetComponentInChildren<DungeonRenderer>();
+            if (_entitySpawner == null) _entitySpawner = GetComponentInChildren<EntitySpawner>();
             if (_camera == null) _camera = Camera.main;
             if (_randomSeedOnStart) _seed = SeedSource.Next();
 
@@ -76,18 +86,22 @@ namespace ToDonegeon.View
             {
                 var bsp = new BspSettings(_minLeafSize, _maxLeafSize, _maxDepth);
                 var carver = new RoomCarverSettings(_edgePadding, _minRoomSize, _minFillRatio);
-                var generator = new BspDungeonGenerator(bsp, carver);
+                var populator = new PopulatorSettings(_maxChests, _maxEnemiesPerRoom, _difficultyTier);
+                var generator = new BspDungeonGenerator(bsp, carver, populator);
 
                 _dungeon = generator.Generate(_width, _height, _seed);
                 _error = null;
+                CountEntities();
 
                 if (_renderer != null)
                 {
                     _renderer.Render(_dungeon.Grid);
                     FrameCamera();
                 }
+                if (_entitySpawner != null) _entitySpawner.Spawn(_dungeon.Entities);
 
-                Debug.Log($"[DungeonDemo] seed={_dungeon.Seed} rooms={_dungeon.Rooms.Count} valid={_dungeon.IsValid}");
+                Debug.Log($"[DungeonDemo] seed={_dungeon.Seed} rooms={_dungeon.Rooms.Count} " +
+                    $"valid={_dungeon.IsValid} entities={_dungeon.Entities.Count}");
             }
             catch (System.Exception ex)
             {
@@ -118,6 +132,7 @@ namespace ToDonegeon.View
                 GUILayout.Label($"Seed: {_dungeon.Seed}");
                 GUILayout.Label($"Size: {_width} x {_height}   Rooms: {_dungeon.Rooms.Count}");
                 GridConnectivityLabel();
+                GUILayout.Label($"Boss: {_bossCount}   Chests: {_chestCount}   Enemies: {_enemyCount}");
             }
 
             if (_error != null) GUILayout.Label("Error: " + _error);
@@ -134,6 +149,24 @@ namespace ToDonegeon.View
             GUILayout.Label($"Validation: {status}");
             GUILayout.Label(
                 $"Reachable: {_dungeon.Connectivity.ReachableCount}/{_dungeon.Connectivity.WalkableCount} walkable");
+        }
+
+        private void CountEntities()
+        {
+            _bossCount = 0;
+            _chestCount = 0;
+            _enemyCount = 0;
+            if (_dungeon == null) return;
+
+            foreach (Entity entity in _dungeon.Entities)
+            {
+                switch (entity.Kind)
+                {
+                    case EntityKind.Boss: _bossCount++; break;
+                    case EntityKind.Chest: _chestCount++; break;
+                    case EntityKind.Enemy: _enemyCount++; break;
+                }
+            }
         }
     }
 }
