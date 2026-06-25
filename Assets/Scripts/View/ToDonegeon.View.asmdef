@@ -1,0 +1,19 @@
+{
+    "name": "ToDonegeon.View",
+    "rootNamespace": "ToDonegeon.View",
+    "references": [
+        "ToDonegeon.Generation",
+        "ToDonegeon.Validation",
+        "ToDonegeon.Pipeline",
+        "Unity.InputSystem"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
