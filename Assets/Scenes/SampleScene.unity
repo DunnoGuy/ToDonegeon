@@ -15975,8 +15975,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: ToDonegeon.View::ToDonegeon.View.DungeonRenderer
   _tilemap: {fileID: 812066773}
   _wallTile: {fileID: 11400000, guid: 13be62fe79a042f4d9c7afeb9c77f597, type: 2}
-  _floorTile: {fileID: 11400000, guid: 182ebfcecc3105a4bb80a67f4c29c05c, type: 2}
-  _corridorTile: {fileID: 11400000, guid: 1d8a7e3fa9d76e2428cd01c9c6ce8743, type: 2}
+  _floorTile: {fileID: 11400000, guid: 559f723a21bc5e54fb826c182a67d3be, type: 2}
+  _corridorTile: {fileID: 11400000, guid: 182ebfcecc3105a4bb80a67f4c29c05c, type: 2}
   _entranceTile: {fileID: 11400000, guid: 97b25e67da5ca124f98d97b9c2fa34c9, type: 2}
   _exitTile: {fileID: 11400000, guid: 1a62e67d8bb6b1a4d92c39a28e13578a, type: 2}
 --- !u!4 &1697926942
