@@ -5,6 +5,7 @@
         "ToDonegeon.Generation",
         "ToDonegeon.Validation",
         "ToDonegeon.Pipeline",
+        "ToDonegeon.Gameplay",
         "Unity.InputSystem"
     ],
     "includePlatforms": [],

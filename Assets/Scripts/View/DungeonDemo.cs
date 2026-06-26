@@ -36,6 +36,7 @@ namespace ToDonegeon.View
         [Header("References")]
         [SerializeField] private DungeonRenderer _renderer;
         [SerializeField] private EntitySpawner _entitySpawner;
+        [SerializeField] private PlayerController _player;
         [SerializeField] private Camera _camera;
 
         [Header("Controls")]
@@ -99,6 +100,8 @@ namespace ToDonegeon.View
                     FrameCamera();
                 }
                 if (_entitySpawner != null) _entitySpawner.Spawn(_dungeon.Entities);
+                if (_player != null && _dungeon.Entrance != null)
+                    _player.Place(_dungeon.Grid, _dungeon.Entrance.Center);
 
                 Debug.Log($"[DungeonDemo] seed={_dungeon.Seed} rooms={_dungeon.Rooms.Count} " +
                     $"valid={_dungeon.IsValid} entities={_dungeon.Entities.Count}");
