@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Tilemaps;
@@ -27,17 +28,21 @@ namespace ToDonegeon.View
         private Vector3 _hopFrom;
         private Vector3 _hopTo;
         private float _hopElapsed;
-        
+
+        private Queue<Coord> _path; // pending click-to-move route, walked one cell per step
+
+        // Raised after a successful step, for a future turn manager
         public event System.Action<Coord> Moved;
 
         public Coord Cell => _cell;
-        
+
         public void Place(DungeonGrid grid, Coord startCell)
         {
             _grid = grid ?? throw new System.ArgumentNullException(nameof(grid));
             _cell = startCell;
             _placed = true;
             _isHopping = false;
+            _path = null;
             transform.position = CellCenter(startCell);
         }
 
@@ -53,45 +58,91 @@ namespace ToDonegeon.View
                 Animate();
                 return;
             }
+            if (!_placed) return;
 
-            if (_placed && TryReadStep(out Coord step))
+            if (TryReadKeyboardStep(out Coord step))
+            {
+                _path = null;
                 TryMove(step);
+                return;
+            }
+
+            if (TryReadClickTarget(out Coord target))
+                _path = BuildPath(target);
+
+            StepAlongPath();
         }
 
         private void TryMove(Coord step)
         {
-            if (!GridMovement.TryStep(_grid, _cell, step, out Coord to)) return;
+            if (GridMovement.TryStep(_grid, _cell, step, out Coord to))
+                CommitMove(to);
+        }
 
+        private void StepAlongPath()
+        {
+            if (_path == null || _path.Count == 0)
+            {
+                _path = null;
+                return;
+            }
+
+            Coord next = _path.Dequeue();
+            if (!GridMovement.TryStep(_grid, _cell, next - _cell, out Coord to))
+            {
+                _path = null; // route no longer valid
+                return;
+            }
+            CommitMove(to);
+        }
+
+        private void CommitMove(Coord to)
+        {
             _cell = to;
             BeginHop(CellCenter(to));
             Moved?.Invoke(_cell);
         }
 
-        private bool TryReadStep(out Coord step)
+        // Diagonals (Q/E/Z/C) are checked before the cardinals (WASD/arrows).
+        private bool TryReadKeyboardStep(out Coord step)
         {
             step = Coord.Zero;
-
             Keyboard keyboard = Keyboard.current;
-            if (keyboard != null)
-            {
-                if (keyboard.upArrowKey.isPressed || keyboard.wKey.isPressed) step = Coord.Up;
-                else if (keyboard.downArrowKey.isPressed || keyboard.sKey.isPressed) step = Coord.Down;
-                else if (keyboard.leftArrowKey.isPressed || keyboard.aKey.isPressed) step = Coord.Left;
-                else if (keyboard.rightArrowKey.isPressed || keyboard.dKey.isPressed) step = Coord.Right;
+            if (keyboard == null) return false;
 
-                if (step != Coord.Zero) return true;
-            }
+            if (keyboard.qKey.isPressed) step = Coord.Up + Coord.Left;
+            else if (keyboard.eKey.isPressed) step = Coord.Up + Coord.Right;
+            else if (keyboard.zKey.isPressed) step = Coord.Down + Coord.Left;
+            else if (keyboard.cKey.isPressed) step = Coord.Down + Coord.Right;
+            else if (keyboard.upArrowKey.isPressed || keyboard.wKey.isPressed) step = Coord.Up;
+            else if (keyboard.downArrowKey.isPressed || keyboard.sKey.isPressed) step = Coord.Down;
+            else if (keyboard.leftArrowKey.isPressed || keyboard.aKey.isPressed) step = Coord.Left;
+            else if (keyboard.rightArrowKey.isPressed || keyboard.dKey.isPressed) step = Coord.Right;
 
+            return step.X != 0 || step.Y != 0;
+        }
+
+        private bool TryReadClickTarget(out Coord target)
+        {
+            target = _cell;
             Mouse mouse = Mouse.current;
-            if (mouse != null && mouse.leftButton.wasPressedThisFrame && _camera != null && _tilemap != null)
-            {
-                Vector3 world = _camera.ScreenToWorldPoint(mouse.position.ReadValue());
-                Vector3Int cell = _tilemap.WorldToCell(world);
-                step = new Coord(System.Math.Sign(cell.x - _cell.X), System.Math.Sign(cell.y - _cell.Y));
-                return step.X != 0 || step.Y != 0;
-            }
+            if (mouse == null || !mouse.leftButton.wasPressedThisFrame || _camera == null || _tilemap == null)
+                return false;
 
-            return false;
+            Vector3 world = _camera.ScreenToWorldPoint(mouse.position.ReadValue());
+            Vector3Int cell = _tilemap.WorldToCell(world);
+            target = new Coord(cell.x, cell.y);
+            return target != _cell;
+        }
+
+        private Queue<Coord> BuildPath(Coord target)
+        {
+            IReadOnlyList<Coord> route = GridPathfinder.FindPath(_grid, _cell, target);
+            if (route.Count == 0) return null;
+
+            var queue = new Queue<Coord>(route.Count);
+            foreach (Coord cell in route) queue.Enqueue(cell);
+            return queue;
         }
 
         private void BeginHop(Vector3 target)
