@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3162164732961607585}
   - component: {fileID: 6731213962750670858}
+  - component: {fileID: 7967973525608505197}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Untagged
@@ -91,3 +92,17 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!114 &7967973525608505197
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2701215177116849340}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8ec3a8de1c0bad4398249720168f3cc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ToDonegeon.View::ToDonegeon.View.Enemy
+  _maxHealth: 12
+  _attackPower: 3

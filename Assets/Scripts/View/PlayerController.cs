@@ -8,34 +8,49 @@ using DungeonGrid = ToDonegeon.Generation.Grid;
 
 namespace ToDonegeon.View
 {
+    // Reads input and drives one player turn: move, attack an enemy, or loot a chest.
     public sealed class PlayerController : MonoBehaviour
     {
         [Header("References")]
         [SerializeField] private Tilemap _tilemap;
         [SerializeField] private Camera _camera;
+        [SerializeField] private EntitySpawner _entitySpawner;
 
         [Header("Movement")]
-        [Tooltip("Seconds for the visual hop between cells; also the minimum time between steps.")]
+        [Tooltip("Seconds for the visual hop between cells; also the minimum time between turns.")]
         [SerializeField] private float _stepDuration = 0.12f;
 
+        [Header("Character")]
+        [SerializeField] private int _maxHealth = 30;
+        [SerializeField] private int _attackPower = 5;
+
         private const float CellCenterOffset = 0.5f;
+        private const float HudWidth = 240f;
+        private const float HudHeight = 92f;
+        private const float HudMargin = 10f;
 
         private DungeonGrid _grid;
         private Coord _cell;
         private bool _placed;
+
+        private PlayerCharacter _character;
+        private string _lastMessage;
 
         private bool _isHopping;
         private Vector3 _hopFrom;
         private Vector3 _hopTo;
         private float _hopElapsed;
 
-        private Queue<Coord> _path; // pending click-to-move route, walked one cell per step
+        private Queue<Coord> _path; // pending click-to-move route, walked one cell per turn
 
-        // Raised after a successful step, for a future turn manager
+        // Raised after the player takes a turn (move, attack, or loot); the seam a future turn
+        // manager uses to run enemy turns and to gate input while enemies are in sight.
         public event System.Action<Coord> Moved;
 
         public Coord Cell => _cell;
+        public PlayerCharacter Character => _character;
 
+        // Positions the player on a freshly generated grid at full health; called after each regeneration.
         public void Place(DungeonGrid grid, Coord startCell)
         {
             _grid = grid ?? throw new System.ArgumentNullException(nameof(grid));
@@ -43,12 +58,16 @@ namespace ToDonegeon.View
             _placed = true;
             _isHopping = false;
             _path = null;
+            _lastMessage = null;
+            _character.Health.ResetToFull();
             transform.position = CellCenter(startCell);
         }
 
         private void Awake()
         {
             if (_camera == null) _camera = Camera.main;
+            if (_entitySpawner == null) _entitySpawner = FindAnyObjectByType<EntitySpawner>();
+            _character = new PlayerCharacter(Mathf.Max(1, _maxHealth), Mathf.Max(0, _attackPower));
         }
 
         private void Update()
@@ -63,7 +82,7 @@ namespace ToDonegeon.View
             if (TryReadKeyboardStep(out Coord step))
             {
                 _path = null;
-                TryMove(step);
+                TryAct(step);
                 return;
             }
 
@@ -73,10 +92,23 @@ namespace ToDonegeon.View
             StepAlongPath();
         }
 
-        private void TryMove(Coord step)
+        // One turn: move into the target cell, or interact with whatever occupies it.
+        private void TryAct(Coord step)
         {
-            if (GridMovement.TryStep(_grid, _cell, step, out Coord to))
-                CommitMove(to);
+            if (!GridMovement.TryStep(_grid, _cell, step, out Coord target)) return;
+
+            if (_entitySpawner != null && _entitySpawner.TryGetInteractable(target, out IInteractable interactable))
+            {
+                InteractionResult result = interactable.Interact(_character);
+                _lastMessage = result.Message;
+                if (result.Consumed) _entitySpawner.Remove(target);
+
+                if (result.BlocksMovement) ConsumeTurnInPlace();
+                else CommitMove(target);
+                return;
+            }
+
+            CommitMove(target);
         }
 
         private void StepAlongPath()
@@ -88,18 +120,25 @@ namespace ToDonegeon.View
             }
 
             Coord next = _path.Dequeue();
-            if (!GridMovement.TryStep(_grid, _cell, next - _cell, out Coord to))
-            {
-                _path = null; // route no longer valid
-                return;
-            }
-            CommitMove(to);
+
+            // Stop auto-walking when the next cell holds something to act on, and resolve it this turn
+            if (_entitySpawner != null && _entitySpawner.TryGetInteractable(next, out _))
+                _path = null;
+
+            TryAct(next - _cell);
         }
 
         private void CommitMove(Coord to)
         {
             _cell = to;
             BeginHop(CellCenter(to));
+            Moved?.Invoke(_cell);
+        }
+
+        // An attack or loot still costs a turn
+        private void ConsumeTurnInPlace()
+        {
+            BeginHop(transform.position);
             Moved?.Invoke(_cell);
         }
 
@@ -167,6 +206,18 @@ namespace ToDonegeon.View
                 return _tilemap.GetCellCenterWorld(new Vector3Int(cell.X, cell.Y, 0));
 
             return new Vector3(cell.X + CellCenterOffset, cell.Y + CellCenterOffset, 0f);
+        }
+
+        private void OnGUI()
+        {
+            if (!_placed || _character == null) return;
+
+            var rect = new Rect(HudMargin, Screen.height - HudHeight - HudMargin, HudWidth, HudHeight);
+            GUILayout.BeginArea(rect, GUI.skin.box);
+            GUILayout.Label($"HP {_character.Health.Current}/{_character.Health.Max}");
+            GUILayout.Label($"ATK {_character.AttackPower}    Gold {_character.Gold}");
+            if (!string.IsNullOrEmpty(_lastMessage)) GUILayout.Label(_lastMessage);
+            GUILayout.EndArea();
         }
     }
 }

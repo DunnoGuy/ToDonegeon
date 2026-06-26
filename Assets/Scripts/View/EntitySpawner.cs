@@ -5,7 +5,8 @@ using ToDonegeon.Generation;
 
 namespace ToDonegeon.View
 {
-    // Instantiates a prefab for each generated entity, separate from the generator
+    // Instantiates a prefab for each generated entity, separate from the generator, and tracks the
+    // interactable (if any) on each cell so the player can act on it.
     public sealed class EntitySpawner : MonoBehaviour
     {
         [Header("Coordinate source")]
@@ -18,8 +19,9 @@ namespace ToDonegeon.View
         [SerializeField] private GameObject _bossPrefab;
 
         private readonly List<GameObject> _spawned = new List<GameObject>();
+        private readonly Dictionary<Coord, IInteractable> _interactables = new Dictionary<Coord, IInteractable>();
 
-        // clears the previous batch and spawns a prefab for every entity that has one assigned
+        // Clears the previous batch and spawns a prefab for every entity that has one assigned.
         public void Spawn(IReadOnlyList<Entity> entities)
         {
             if (entities == null) throw new System.ArgumentNullException(nameof(entities));
@@ -32,16 +34,43 @@ namespace ToDonegeon.View
                 if (prefab == null) continue;
 
                 Vector3 world = _tilemap.GetCellCenterWorld(new Vector3Int(entity.Position.X, entity.Position.Y, 0));
-                _spawned.Add(Instantiate(prefab, world, Quaternion.identity, _container));
+                GameObject instance = Instantiate(prefab, world, Quaternion.identity, _container);
+                _spawned.Add(instance);
+
+                if (instance.TryGetComponent(out IInteractable interactable))
+                    _interactables[entity.Position] = interactable;
             }
         }
 
-        // destroys all currently spawned entity GameObjects
+        // The interactable currently on the cell, if any
+        // drops the entry if it was destroyed.
+        public bool TryGetInteractable(Coord cell, out IInteractable interactable)
+        {
+            if (_interactables.TryGetValue(cell, out interactable))
+            {
+                if (interactable is Object obj && obj == null)
+                {
+                    _interactables.Remove(cell);
+                    interactable = null;
+                    return false;
+                }
+                return true;
+            }
+
+            interactable = null;
+            return false;
+        }
+
+        // forget the interactable on the cell after the player has consumed it
+        public void Remove(Coord cell) => _interactables.Remove(cell);
+
+        // destroy all currently spawned entity GameObjects
         public void Clear()
         {
             foreach (GameObject instance in _spawned)
                 if (instance != null) Destroy(instance);
             _spawned.Clear();
+            _interactables.Clear();
         }
 
         private void EnsureRefs()

@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2557900834161899084}
   - component: {fileID: 4780418717596102891}
+  - component: {fileID: 4511283204155094923}
   m_Layer: 0
   m_Name: Chest
   m_TagString: Untagged
@@ -91,3 +92,17 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!114 &4511283204155094923
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4403463049760203413}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f325a3a2aa750d499a3997bddb0c86c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ToDonegeon.View::ToDonegeon.View.Chest
+  _minGold: 10
+  _maxGold: 40
