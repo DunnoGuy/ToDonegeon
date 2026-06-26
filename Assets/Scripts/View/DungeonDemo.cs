@@ -39,6 +39,9 @@ namespace ToDonegeon.View
         [SerializeField] private PlayerController _player;
         [SerializeField] private Camera _camera;
 
+        [Tooltip("Frame the whole dungeon on generate")]
+        [SerializeField] private bool _frameCameraToDungeon = true;
+
         [Header("Controls")]
         [SerializeField] private Key _regenerateKey = Key.R;
 
@@ -97,7 +100,7 @@ namespace ToDonegeon.View
                 if (_renderer != null)
                 {
                     _renderer.Render(_dungeon.Grid);
-                    FrameCamera();
+                    if (_frameCameraToDungeon) FrameCamera();
                 }
                 if (_entitySpawner != null) _entitySpawner.Spawn(_dungeon.Entities);
                 if (_player != null && _dungeon.Entrance != null)
