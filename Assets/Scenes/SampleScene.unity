@@ -16012,6 +16012,7 @@ GameObject:
   - component: {fileID: 1697926941}
   - component: {fileID: 1697926940}
   - component: {fileID: 1697926943}
+  - component: {fileID: 1697926944}
   m_Layer: 0
   m_Name: Dungeon Demo
   m_TagString: Untagged
@@ -16100,6 +16101,19 @@ MonoBehaviour:
   _enemyPrefab: {fileID: 2701215177116849340, guid: 0c5ed513589c49c4eaf5943009952a8e, type: 3}
   _chestPrefab: {fileID: 4403463049760203413, guid: ff88e38f05aa0d2478ee7a587a21feea, type: 3}
   _bossPrefab: {fileID: 3151480295272499916, guid: 9a277b79210222544839e2e8ebdfb25f, type: 3}
+--- !u!114 &1697926944
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1697926939}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eea6ae417c19a374f9627ae4820628fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ToDonegeon.View::ToDonegeon.View.TaskPanel
+  _player: {fileID: 2143422499}
 --- !u!1 &1941868603
 GameObject:
   m_ObjectHideFlags: 0

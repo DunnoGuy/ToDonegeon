@@ -168,7 +168,10 @@ namespace ToDonegeon.View
             if (mouse == null || !mouse.leftButton.wasPressedThisFrame || _camera == null || _tilemap == null)
                 return false;
 
-            Vector3 world = _camera.ScreenToWorldPoint(mouse.position.ReadValue());
+            Vector2 screen = mouse.position.ReadValue();
+            if (ScreenGuiRegistry.IsPointerOverPanel(screen)) return false; // the click landed on a panel
+
+            Vector3 world = _camera.ScreenToWorldPoint(screen);
             Vector3Int cell = _tilemap.WorldToCell(world);
             target = new Coord(cell.x, cell.y);
             return target != _cell;
@@ -213,9 +216,10 @@ namespace ToDonegeon.View
             if (!_placed || _character == null) return;
 
             var rect = new Rect(HudMargin, Screen.height - HudHeight - HudMargin, HudWidth, HudHeight);
+            ScreenGuiRegistry.Register(rect);
             GUILayout.BeginArea(rect, GUI.skin.box);
-            GUILayout.Label($"HP {_character.Health.Current}/{_character.Health.Max}");
-            GUILayout.Label($"ATK {_character.AttackPower}    Gold {_character.Gold}");
+            GUILayout.Label($"Level {_character.Experience.Level} HP {_character.Health.Current}/{_character.Health.Max}");
+            GUILayout.Label($"ATK {_character.AttackPower} Gold {_character.Gold}");
             if (!string.IsNullOrEmpty(_lastMessage)) GUILayout.Label(_lastMessage);
             GUILayout.EndArea();
         }

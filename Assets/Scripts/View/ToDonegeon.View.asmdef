@@ -6,6 +6,7 @@
         "ToDonegeon.Validation",
         "ToDonegeon.Pipeline",
         "ToDonegeon.Gameplay",
+        "ToDonegeon.Tasks",
         "Unity.InputSystem"
     ],
     "includePlatforms": [],
