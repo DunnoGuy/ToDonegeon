@@ -16,6 +16,7 @@ namespace ToDonegeon.View
         private const float CheckboxWidth = 22f;
         private const float RewardWidth = 44f;
         private const float RemoveWidth = 24f;
+        private const float ReorderWidth = 22f;
 
         private static readonly string[] DifficultyNames = System.Enum.GetNames(typeof(TaskDifficulty));
 
@@ -94,12 +95,20 @@ namespace ToDonegeon.View
         private void DrawTasks()
         {
             System.Guid? toRemove = null;
+            System.Guid? toMove = null;
+            int moveIndex = 0;
             var items = _tasks.Items;
 
             for (int i = 0; i < items.Count; i++)
             {
                 TaskItem task = items[i];
                 GUILayout.BeginHorizontal();
+
+                GUI.enabled = i > 0;
+                if (GUILayout.Button("▲", GUILayout.Width(ReorderWidth))) { toMove = task.Id; moveIndex = i - 1; }
+                GUI.enabled = i < items.Count - 1;
+                if (GUILayout.Button("▼", GUILayout.Width(ReorderWidth))) { toMove = task.Id; moveIndex = i + 1; }
+                GUI.enabled = true;
 
                 if (task.IsDone)
                 {
@@ -122,6 +131,8 @@ namespace ToDonegeon.View
                 GUILayout.EndHorizontal();
             }
 
+            // Apply the pending edit after the loop, so the list is not mutated while iterating.
+            if (toMove.HasValue) _tasks.Move(toMove.Value, moveIndex);
             if (toRemove.HasValue) _tasks.Remove(toRemove.Value);
         }
 
