@@ -1,0 +1,20 @@
+{
+    "name": "ToDonegeon.Editor",
+    "rootNamespace": "ToDonegeon.EditorTools",
+    "references": [
+        "ToDonegeon.Generation",
+        "ToDonegeon.Pipeline",
+        "ToDonegeon.Analysis"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
