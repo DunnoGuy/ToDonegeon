@@ -1,0 +1,86 @@
+using NUnit.Framework;
+using ToDonegeon.Pipeline;
+using ToDonegeon.Analysis;
+
+namespace ToDonegeon.Tests
+{
+    public class DungeonMetricsTests
+    {
+        private const int Width = 64;
+        private const int Height = 48;
+
+        private static DungeonMetrics Measure(int seed)
+            => DungeonMetrics.Measure(new BspDungeonGenerator().Generate(Width, Height, seed));
+
+        [Test]
+        public void Metrics_Are_Deterministic()
+        {
+            DungeonMetrics a = Measure(7);
+            DungeonMetrics b = Measure(7);
+
+            Assert.That(a.RoomCount, Is.EqualTo(b.RoomCount));
+            Assert.That(a.RoomDensity, Is.EqualTo(b.RoomDensity));
+            Assert.That(a.Linearity, Is.EqualTo(b.Linearity));
+            Assert.That(a.Leniency, Is.EqualTo(b.Leniency));
+        }
+
+        [Test]
+        public void Metrics_Lie_In_Expected_Ranges()
+        {
+            DungeonMetrics m = Measure(3);
+
+            Assert.That(m.RoomCount, Is.GreaterThan(0));
+            Assert.That(m.IsValid, Is.True);
+            foreach (float value in new[] { m.RoomDensity, m.WalkableDensity, m.CorridorShare, m.Linearity, m.Leniency })
+                Assert.That(value, Is.InRange(0f, 1f));
+            Assert.That(m.WalkableDensity, Is.GreaterThanOrEqualTo(m.RoomDensity), "walkable includes rooms + corridors");
+        }
+    }
+
+    public class ExpressiveRangeTests
+    {
+        private const int Width = 64;
+        private const int Height = 48;
+        private const int Bins = 10;
+
+        private static ExpressiveRangeReport Run(int count)
+            => ExpressiveRangeAnalysis.Run(new BspDungeonGenerator(), Width, Height, 0, count,
+                new MetricAxis("RoomDensity", m => m.RoomDensity),
+                new MetricAxis("Linearity", m => m.Linearity),
+                Bins);
+
+        [Test]
+        public void Every_Sample_Falls_In_Exactly_One_Bin()
+        {
+            ExpressiveRangeReport report = Run(200);
+
+            int sum = 0;
+            for (int x = 0; x < Bins; x++)
+                for (int y = 0; y < Bins; y++)
+                    sum += report.Histogram[x, y];
+
+            Assert.That(sum, Is.EqualTo(200));
+            Assert.That(report.ValidRate, Is.EqualTo(1f));
+            Assert.That(report.Coverage, Is.GreaterThan(0f).And.LessThanOrEqualTo(1f));
+        }
+
+        [Test]
+        public void Meets_The_Report_Targets()
+        {
+            ExpressiveRangeReport report = Run(1000);
+
+            Assert.That(report.Coverage, Is.GreaterThanOrEqualTo(0.60f), "expressive-range coverage target");
+            Assert.That(report.PeakCellShare, Is.LessThanOrEqualTo(0.15f), "no mode collapse");
+            Assert.That(report.ValidRate, Is.EqualTo(1f), "every dungeon playable");
+        }
+
+        [Test]
+        public void Metrics_Csv_Has_A_Header_And_One_Row_Per_Sample()
+        {
+            string csv = Run(50).ToMetricsCsv();
+
+            Assert.That(csv, Does.StartWith("seed,roomCount"));
+            Assert.That(csv.Trim().Split('\n').Length, Is.EqualTo(51)); // header + 50 rows
+        }
+    }
+}

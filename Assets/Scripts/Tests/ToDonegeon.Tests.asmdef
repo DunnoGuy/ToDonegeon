@@ -8,7 +8,8 @@
         "ToDonegeon.Validation",
         "ToDonegeon.Pipeline",
         "ToDonegeon.Gameplay",
-        "ToDonegeon.Tasks"
+        "ToDonegeon.Tasks",
+        "ToDonegeon.Analysis"
     ],
     "includePlatforms": [
         "Editor"
