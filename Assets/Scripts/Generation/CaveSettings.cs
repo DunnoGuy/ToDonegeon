@@ -13,6 +13,8 @@ namespace ToDonegeon.Generation
         // Cells outside the region count as wall, so the cave rounds off inside its region.
         public const int DefaultWallThreshold = 5;
         public const bool DefaultKeepOnlyLargestComponent = true;
+        public const bool DefaultNoiseSeeded = false;
+        public const float DefaultNoiseFrequency = 0.12f;
 
         public float InitialWallProbability { get; }
         public int SmoothingIterations { get; }
@@ -21,6 +23,11 @@ namespace ToDonegeon.Generation
         // The flood-fill repair step. Only keeps the largest connected floor blob and fill
         // stray pockets back to wall, so the chamber is reachable as a whole.
         public bool KeepOnlyLargestComponent { get; }
+        
+        public bool NoiseSeeded { get; }
+
+        // how fast the noise varies across cells
+        public float NoiseFrequency { get; }
 
         private const int NeighbourCount = 8;
 
@@ -28,7 +35,9 @@ namespace ToDonegeon.Generation
             float initialWallProbability = DefaultInitialWallProbability,
             int smoothingIterations = DefaultSmoothingIterations,
             int wallThreshold = DefaultWallThreshold,
-            bool keepOnlyLargestComponent = DefaultKeepOnlyLargestComponent)
+            bool keepOnlyLargestComponent = DefaultKeepOnlyLargestComponent,
+            bool noiseSeeded = DefaultNoiseSeeded,
+            float noiseFrequency = DefaultNoiseFrequency)
         {
             if (initialWallProbability < 0f || initialWallProbability > 1f)
                 throw new ArgumentOutOfRangeException(nameof(initialWallProbability), "Must lie in [0, 1].");
@@ -36,11 +45,15 @@ namespace ToDonegeon.Generation
                 throw new ArgumentOutOfRangeException(nameof(smoothingIterations), "Must be non-negative.");
             if (wallThreshold < 1 || wallThreshold > NeighbourCount)
                 throw new ArgumentOutOfRangeException(nameof(wallThreshold), "Must lie in [1, 8].");
+            if (noiseFrequency <= 0f)
+                throw new ArgumentOutOfRangeException(nameof(noiseFrequency), "Must be positive.");
 
             InitialWallProbability = initialWallProbability;
             SmoothingIterations = smoothingIterations;
             WallThreshold = wallThreshold;
             KeepOnlyLargestComponent = keepOnlyLargestComponent;
+            NoiseSeeded = noiseSeeded;
+            NoiseFrequency = noiseFrequency;
         }
     }
 }

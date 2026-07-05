@@ -26,7 +26,7 @@ namespace ToDonegeon.Generation
             int w = region.Width;
             int h = region.Height;
 
-            bool[,] floor = Seed(w, h, rng);
+            bool[,] floor = _settings.NoiseSeeded ? SeedFromNoise(region, rng) : SeedRandom(w, h, rng);
             for (int i = 0; i < _settings.SmoothingIterations; i++)
                 floor = Smooth(floor, w, h);
 
@@ -54,12 +54,28 @@ namespace ToDonegeon.Generation
             return new CaveResult(anchor, floorBounds, floorCount, largest.Count, componentCount);
         }
 
-        private bool[,] Seed(int w, int h, Random rng)
+        private bool[,] SeedRandom(int w, int h, Random rng)
         {
             var floor = new bool[w, h];
             for (int y = 0; y < h; y++)
                 for (int x = 0; x < w; x++)
                     floor[x, y] = rng.NextDouble() >= _settings.InitialWallProbability;
+            return floor;
+        }
+
+        // seeds openness from a perlin field over the region's world position, so nearby
+        // cells tend to agree and the caves come out in coherent patches
+        private bool[,] SeedFromNoise(GridRect region, Random rng)
+        {
+            var noise = new PerlinNoise(rng.Next());
+            var floor = new bool[region.Width, region.Height];
+            for (int y = 0; y < region.Height; y++)
+                for (int x = 0; x < region.Width; x++)
+                {
+                    float value = noise.Noise((region.X + x) * _settings.NoiseFrequency,
+                        (region.Y + y) * _settings.NoiseFrequency);
+                    floor[x, y] = value >= _settings.InitialWallProbability;
+                }
             return floor;
         }
 

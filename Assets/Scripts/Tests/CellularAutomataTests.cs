@@ -110,6 +110,30 @@ namespace ToDonegeon.Tests
                     $"seed {seed}: floor not fully reachable from the anchor");
             }
         }
+
+        [Test]
+        public void Noise_Seeding_Changes_The_Result()
+        {
+            var uniform = new CaveSettings(noiseSeeded: false);
+            var perlin = new CaveSettings(noiseSeeded: true);
+            Assert.That(FloorSignature(Fill(42, perlin).grid),
+                Is.Not.EqualTo(FloorSignature(Fill(42, uniform).grid)));
+        }
+
+        [Test]
+        public void Noise_Seeded_Caves_Are_Still_Valid()
+        {
+            var settings = new CaveSettings(noiseSeeded: true);
+            for (int seed = 0; seed < 40; seed++)
+            {
+                var (grid, result) = Fill(seed, settings);
+                Assert.That(grid[result.Anchor], Is.EqualTo(TileType.Floor), $"seed {seed}: anchor not floor");
+                Assert.That(result.ComponentCount, Is.EqualTo(1), $"seed {seed}: more than one component");
+                Assert.That(ReachableFloorCount(grid, result.Anchor), Is.EqualTo(result.FloorCount),
+                    $"seed {seed}: floor not fully reachable from the anchor");
+                Assert.That(result.FloorCount, Is.GreaterThan(0), $"seed {seed}: empty cave");
+            }
+        }
     }
 
     public class CaveSettingsTests
@@ -132,6 +156,13 @@ namespace ToDonegeon.Tests
         {
             Assert.Throws<ArgumentOutOfRangeException>(() => new CaveSettings(wallThreshold: 0));
             Assert.Throws<ArgumentOutOfRangeException>(() => new CaveSettings(wallThreshold: 9));
+        }
+
+        [Test]
+        public void Rejects_Nonpositive_Noise_Frequency()
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => new CaveSettings(noiseFrequency: 0f));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new CaveSettings(noiseFrequency: -0.1f));
         }
     }
 }
