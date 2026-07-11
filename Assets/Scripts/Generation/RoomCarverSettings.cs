@@ -7,6 +7,7 @@ namespace ToDonegeon.Generation
         public const int DefaultEdgePadding = 1;
         public const int DefaultMinRoomSize = 4;
         public const float DefaultMinFillRatio = 0.6f;
+        public const ChamberShape DefaultShape = ChamberShape.Rectangle;
 
         // wall cells left between a room and its leaf's edges, so neighbouring rooms stay
         // separated by wall and are later joined by corridors rather than merging.
@@ -17,10 +18,17 @@ namespace ToDonegeon.Generation
         // keeps rooms from shrinking to specks while still allowing size variety
         public float MinFillRatio { get; }
 
+        public ChamberShape Shape { get; }
+
+        // used when Shape is Cave
+        public CaveSettings CaveSettings { get; }
+
         public RoomCarverSettings(
             int edgePadding = DefaultEdgePadding,
             int minRoomSize = DefaultMinRoomSize,
-            float minFillRatio = DefaultMinFillRatio)
+            float minFillRatio = DefaultMinFillRatio,
+            ChamberShape shape = DefaultShape,
+            CaveSettings caveSettings = null)
         {
             if (edgePadding < 0)
                 throw new ArgumentOutOfRangeException(nameof(edgePadding), "Must be non-negative.");
@@ -32,6 +40,8 @@ namespace ToDonegeon.Generation
             EdgePadding = edgePadding;
             MinRoomSize = minRoomSize;
             MinFillRatio = minFillRatio;
+            Shape = shape;
+            CaveSettings = caveSettings ?? new CaveSettings();
         }
     }
 }

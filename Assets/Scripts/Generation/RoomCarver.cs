@@ -32,6 +32,14 @@ namespace ToDonegeon.Generation
 
         private bool TryCarve(Grid grid, BspNode leaf, Random rng, out Room room)
         {
+            if (_settings.Shape == ChamberShape.Cave)
+                return TryCarveCave(grid, leaf, rng, out room);
+
+            return TryCarveRectangle(grid, leaf, rng, out room);
+        }
+
+        private bool TryCarveRectangle(Grid grid, BspNode leaf, Random rng, out Room room)
+        {
             GridRect region = leaf.Region;
 
             int width = RoomExtent(region.Width, rng);
@@ -51,7 +59,36 @@ namespace ToDonegeon.Generation
             room = new Room(bounds, leaf);
             return true;
         }
-        
+
+        // grows a cellular-automata cave inside the padded leaf
+        private bool TryCarveCave(Grid grid, BspNode leaf, Random rng, out Room room)
+        {
+            if (!TryPaddedRegion(leaf.Region, out GridRect region))
+            {
+                room = null;
+                return false;
+            }
+
+            CaveResult cave = new CellularAutomata(_settings.CaveSettings).Fill(grid, region, rng);
+            room = new Room(cave.FloorBounds, leaf, cave.Anchor);
+            return true;
+        }
+
+        private bool TryPaddedRegion(GridRect leafRegion, out GridRect region)
+        {
+            int pad = _settings.EdgePadding;
+            int width = leafRegion.Width - pad * 2;
+            int height = leafRegion.Height - pad * 2;
+            if (width < 1 || height < 1)
+            {
+                region = default;
+                return false;
+            }
+
+            region = new GridRect(leafRegion.X + pad, leafRegion.Y + pad, width, height);
+            return true;
+        }
+
         private int RoomExtent(int leafLength, Random rng)
         {
             int available = leafLength - _settings.EdgePadding * 2;
