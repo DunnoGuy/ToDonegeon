@@ -32,10 +32,15 @@ namespace ToDonegeon.Generation
 
         private bool TryCarve(Grid grid, BspNode leaf, Random rng, out Room room)
         {
-            if (_settings.Shape == ChamberShape.Cave)
-                return TryCarveCave(grid, leaf, rng, out room);
-
-            return TryCarveRectangle(grid, leaf, rng, out room);
+            switch (_settings.Shape)
+            {
+                case ChamberShape.Cave:
+                    return TryCarveCave(grid, leaf, rng, out room);
+                case ChamberShape.RandomWalk:
+                    return TryCarveRandomWalk(grid, leaf, rng, out room);
+                default:
+                    return TryCarveRectangle(grid, leaf, rng, out room);
+            }
         }
 
         private bool TryCarveRectangle(Grid grid, BspNode leaf, Random rng, out Room room)
@@ -71,6 +76,20 @@ namespace ToDonegeon.Generation
 
             CaveResult cave = new CellularAutomata(_settings.CaveSettings).Fill(grid, region, rng);
             room = new Room(cave.FloorBounds, leaf, cave.Anchor);
+            return true;
+        }
+
+        // carves a random-walk passage inside the padded leaf
+        private bool TryCarveRandomWalk(Grid grid, BspNode leaf, Random rng, out Room room)
+        {
+            if (!TryPaddedRegion(leaf.Region, out GridRect region))
+            {
+                room = null;
+                return false;
+            }
+
+            WalkResult walk = new RandomWalk(_settings.WalkSettings).Carve(grid, region, rng);
+            room = new Room(walk.FloorBounds, leaf, walk.Anchor);
             return true;
         }
 

@@ -23,12 +23,16 @@ namespace ToDonegeon.Generation
         // used when Shape is Cave
         public CaveSettings CaveSettings { get; }
 
+        // used when Shape is RandomWalk
+        public RandomWalkSettings WalkSettings { get; }
+
         public RoomCarverSettings(
             int edgePadding = DefaultEdgePadding,
             int minRoomSize = DefaultMinRoomSize,
             float minFillRatio = DefaultMinFillRatio,
             ChamberShape shape = DefaultShape,
-            CaveSettings caveSettings = null)
+            CaveSettings caveSettings = null,
+            RandomWalkSettings walkSettings = null)
         {
             if (edgePadding < 0)
                 throw new ArgumentOutOfRangeException(nameof(edgePadding), "Must be non-negative.");
@@ -42,6 +46,7 @@ namespace ToDonegeon.Generation
             MinFillRatio = minFillRatio;
             Shape = shape;
             CaveSettings = caveSettings ?? new CaveSettings();
+            WalkSettings = walkSettings ?? new RandomWalkSettings();
         }
     }
 }

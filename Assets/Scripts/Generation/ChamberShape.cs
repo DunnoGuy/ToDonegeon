@@ -4,6 +4,7 @@ namespace ToDonegeon.Generation
     public enum ChamberShape
     {
         Rectangle,
-        Cave
+        Cave,
+        RandomWalk
     }
 }

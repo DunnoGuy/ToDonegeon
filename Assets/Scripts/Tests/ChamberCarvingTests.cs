@@ -31,22 +31,24 @@ namespace ToDonegeon.Tests
             return sb.ToString();
         }
 
-        [Test]
-        public void Cave_Chamber_Centres_Sit_On_Floor()
+        [TestCase(ChamberShape.Cave)]
+        [TestCase(ChamberShape.RandomWalk)]
+        public void Chamber_Centres_Sit_On_Floor(ChamberShape shape)
         {
             for (int seed = 0; seed < 40; seed++)
             {
-                var (grid, _, rooms) = Generate(seed, ChamberShape.Cave);
+                var (grid, _, rooms) = Generate(seed, shape);
                 foreach (Room room in rooms)
                     Assert.That(grid[room.Center], Is.EqualTo(TileType.Floor), $"seed {seed}");
             }
         }
 
-        [Test]
-        public void Cave_Chambers_Stay_Inside_Their_Leaf_With_Padding()
+        [TestCase(ChamberShape.Cave)]
+        [TestCase(ChamberShape.RandomWalk)]
+        public void Chambers_Stay_Inside_Their_Leaf_With_Padding(ChamberShape shape)
         {
             const int pad = RoomCarverSettings.DefaultEdgePadding;
-            var (_, _, rooms) = Generate(5, ChamberShape.Cave);
+            var (_, _, rooms) = Generate(5, shape);
             foreach (Room room in rooms)
             {
                 GridRect leaf = room.Leaf.Region;
@@ -58,41 +60,45 @@ namespace ToDonegeon.Tests
             }
         }
 
-        [Test]
-        public void Same_Seed_Produces_Identical_Cave_Layout()
+        [TestCase(ChamberShape.Cave)]
+        [TestCase(ChamberShape.RandomWalk)]
+        public void Same_Seed_Produces_Identical_Layout(ChamberShape shape)
         {
-            Assert.That(FloorSignature(Generate(123, ChamberShape.Cave).grid),
-                Is.EqualTo(FloorSignature(Generate(123, ChamberShape.Cave).grid)));
+            Assert.That(FloorSignature(Generate(123, shape).grid),
+                Is.EqualTo(FloorSignature(Generate(123, shape).grid)));
         }
 
-        [Test]
-        public void Different_Seeds_Produce_Varied_Cave_Layout()
+        [TestCase(ChamberShape.Cave)]
+        [TestCase(ChamberShape.RandomWalk)]
+        public void Different_Seeds_Produce_Varied_Layout(ChamberShape shape)
         {
             var signatures = new HashSet<string>();
             for (int seed = 0; seed < 16; seed++)
-                signatures.Add(FloorSignature(Generate(seed, ChamberShape.Cave).grid));
+                signatures.Add(FloorSignature(Generate(seed, shape).grid));
 
             Assert.That(signatures.Count, Is.GreaterThan(1));
         }
 
-        [Test]
-        public void Cave_Chambers_Are_Not_Solid_Rectangles()
+        [TestCase(ChamberShape.Cave)]
+        [TestCase(ChamberShape.RandomWalk)]
+        public void Chambers_Are_Not_Solid_Rectangles(ChamberShape shape)
         {
             for (int seed = 0; seed < 20; seed++)
             {
-                var (grid, _, rooms) = Generate(seed, ChamberShape.Cave);
+                var (grid, _, rooms) = Generate(seed, shape);
                 int floor = grid.Count(TileType.Floor);
                 int boundsArea = rooms.Sum(r => r.Bounds.Area);
-                Assert.That(floor, Is.LessThan(boundsArea), $"seed {seed}: caves fill their whole boxes");
+                Assert.That(floor, Is.LessThan(boundsArea), $"seed {seed}: chambers fill their whole boxes");
             }
         }
 
-        [Test]
-        public void Cave_Dungeons_Connect_Through_Corridors()
+        [TestCase(ChamberShape.Cave)]
+        [TestCase(ChamberShape.RandomWalk)]
+        public void Organic_Dungeons_Connect_Through_Corridors(ChamberShape shape)
         {
             for (int seed = 0; seed < 40; seed++)
             {
-                var (grid, tree, rooms) = Generate(seed, ChamberShape.Cave);
+                var (grid, tree, rooms) = Generate(seed, shape);
                 new CorridorConnector().Connect(grid, tree, rooms, new Random(seed + 1));
 
                 Coord start = rooms[0].Center;
