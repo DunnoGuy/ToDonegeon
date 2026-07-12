@@ -9,6 +9,13 @@ namespace ToDonegeon.Generation
     // Each split is reconnected, so the corridors form a spanning backbone over every room.
     public sealed class CorridorConnector
     {
+        private readonly CorridorSettings _settings;
+
+        public CorridorConnector(CorridorSettings settings = null)
+        {
+            _settings = settings ?? new CorridorSettings();
+        }
+
         public IReadOnlyList<RoomLink> Connect(Grid grid, BspTree tree, IReadOnlyList<Room> rooms, Random rng)
         {
             if (grid == null) throw new ArgumentNullException(nameof(grid));
@@ -21,7 +28,62 @@ namespace ToDonegeon.Generation
 
             var links = new List<RoomLink>();
             ConnectSubtree(tree.Root, grid, roomByLeaf, rng, links);
+            AddLoops(grid, rooms, rng, links);
             return links;
+        }
+
+        // Adds a few extra corridors between nearby rooms on top of the spanning backbone.
+        private void AddLoops(Grid grid, IReadOnlyList<Room> rooms, Random rng, List<RoomLink> links)
+        {
+            if (_settings.MaxExtraLoops <= 0 || _settings.ExtraLoopChance <= 0f || rooms.Count < 3)
+                return;
+
+            var index = new Dictionary<Room, int>(rooms.Count);
+            for (int i = 0; i < rooms.Count; i++) index[rooms[i]] = i;
+
+            var connected = new HashSet<long>();
+            foreach (RoomLink link in links)
+                connected.Add(PairKey(index[link.A], index[link.B]));
+
+            int added = 0;
+            for (int i = 0; i < rooms.Count && added < _settings.MaxExtraLoops; i++)
+            {
+                if (rng.NextDouble() >= _settings.ExtraLoopChance) continue;
+
+                Room nearest = NearestUnconnected(i, rooms, connected);
+                if (nearest == null) continue;
+
+                CarveLShaped(grid, rooms[i].Center, nearest.Center, rng);
+                links.Add(new RoomLink(rooms[i], nearest));
+                connected.Add(PairKey(i, index[nearest]));
+                added++;
+            }
+        }
+
+        private static Room NearestUnconnected(int fromIndex, IReadOnlyList<Room> rooms, HashSet<long> connected)
+        {
+            Room from = rooms[fromIndex];
+            Room best = null;
+            int bestDistance = int.MaxValue;
+            for (int j = 0; j < rooms.Count; j++)
+            {
+                if (j == fromIndex || connected.Contains(PairKey(fromIndex, j))) continue;
+
+                int distance = Coord.ManhattanDistance(from.Center, rooms[j].Center);
+                if (distance < bestDistance)
+                {
+                    bestDistance = distance;
+                    best = rooms[j];
+                }
+            }
+            return best;
+        }
+
+        private static long PairKey(int a, int b)
+        {
+            int lo = Math.Min(a, b);
+            int hi = Math.Max(a, b);
+            return ((long)lo << 32) | (uint)hi;
         }
 
         // connects everything below the node and returns one representative room of the subtree
