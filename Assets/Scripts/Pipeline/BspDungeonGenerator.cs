@@ -22,6 +22,7 @@ namespace ToDonegeon.Pipeline
             BspSettings bspSettings = null,
             RoomCarverSettings carverSettings = null,
             PopulatorSettings populatorSettings = null,
+            CorridorSettings corridorSettings = null,
             int maxAttempts = DefaultMaxAttempts)
         {
             if (maxAttempts < 1)
@@ -29,7 +30,7 @@ namespace ToDonegeon.Pipeline
 
             _partitioner = new BspPartitioner(bspSettings ?? new BspSettings());
             _carver = new RoomCarver(carverSettings ?? new RoomCarverSettings());
-            _connector = new CorridorConnector();
+            _connector = new CorridorConnector(corridorSettings);
             _validator = new ConnectivityValidator();
             _populator = new DungeonPopulator(populatorSettings ?? new PopulatorSettings());
             _maxAttempts = maxAttempts;
