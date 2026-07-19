@@ -28,6 +28,12 @@ namespace ToDonegeon.View
         [Range(0.1f, 1f)]
         [SerializeField] private float _minFillRatio = RoomCarverSettings.DefaultMinFillRatio;
 
+        [Header("Space type")]
+        [SerializeField] private ChamberShape _chamberShape = ChamberShape.Rectangle;
+        [SerializeField] private bool _enableLoops;
+        [Tooltip("Cave chambers only")]
+        [SerializeField] private bool _repairCavePockets = true;
+
         [Header("Populate")]
         [SerializeField] private int _maxChests = PopulatorSettings.DefaultMaxChests;
         [SerializeField] private int _maxEnemiesPerRoom = PopulatorSettings.DefaultMaxEnemiesPerRoom;
@@ -48,8 +54,10 @@ namespace ToDonegeon.View
         private const float CameraDepth = -10f;
         private const float CameraPadding = 1f;
         private const float PanelWidth = 320f;
-        private const float PanelHeight = 188f;
+        private const float PanelHeight = 232f;
         private const float PanelMargin = 10f;
+        private const float LoopChance = 0.5f;
+        private const int MaxLoops = 3;
 
         private static readonly System.Random SeedSource = new System.Random();
 
@@ -89,9 +97,12 @@ namespace ToDonegeon.View
             try
             {
                 var bsp = new BspSettings(_minLeafSize, _maxLeafSize, _maxDepth);
-                var carver = new RoomCarverSettings(_edgePadding, _minRoomSize, _minFillRatio);
+                var caveSettings = new CaveSettings(keepOnlyLargestComponent: _repairCavePockets);
+                var carver = new RoomCarverSettings(
+                    _edgePadding, _minRoomSize, _minFillRatio, _chamberShape, caveSettings);
                 var populator = new PopulatorSettings(_maxChests, _maxEnemiesPerRoom, _difficultyTier);
-                var generator = new BspDungeonGenerator(bsp, carver, populator);
+                var corridor = _enableLoops ? new CorridorSettings(LoopChance, MaxLoops) : null;
+                var generator = new BspDungeonGenerator(bsp, carver, populator, corridor);
 
                 _dungeon = generator.Generate(_width, _height, _seed);
                 _error = null;
@@ -106,8 +117,8 @@ namespace ToDonegeon.View
                 if (_player != null && _dungeon.Entrance != null)
                     _player.Place(_dungeon.Grid, _dungeon.Entrance.Center);
 
-                Debug.Log($"[DungeonDemo] seed={_dungeon.Seed} rooms={_dungeon.Rooms.Count} " +
-                    $"valid={_dungeon.IsValid} entities={_dungeon.Entities.Count}");
+                Debug.Log($"[DungeonDemo] seed={_dungeon.Seed} shape={SpaceType()} rooms={_dungeon.Rooms.Count} " +
+                    $"valid={_dungeon.IsValid} attempts={_dungeon.Attempts} entities={_dungeon.Entities.Count}");
             }
             catch (System.Exception ex)
             {
@@ -136,6 +147,7 @@ namespace ToDonegeon.View
             if (_dungeon != null)
             {
                 GUILayout.Label($"Seed: {_dungeon.Seed}");
+                GUILayout.Label($"Space type: {SpaceType()}");
                 GUILayout.Label($"Size: {_width} x {_height}   Rooms: {_dungeon.Rooms.Count}");
                 GridConnectivityLabel();
                 GUILayout.Label($"Boss: {_bossCount}   Chests: {_chestCount}   Enemies: {_enemyCount}");
@@ -152,10 +164,12 @@ namespace ToDonegeon.View
         private void GridConnectivityLabel()
         {
             string status = _dungeon.IsValid ? "VALID — fully connected" : "INVALID — see console";
-            GUILayout.Label($"Validation: {status}");
+            GUILayout.Label($"Validation: {status}   Attempts: {_dungeon.Attempts}");
             GUILayout.Label(
                 $"Reachable: {_dungeon.Connectivity.ReachableCount}/{_dungeon.Connectivity.WalkableCount} walkable");
         }
+
+        private string SpaceType() => _enableLoops ? $"{_chamberShape} + loops" : _chamberShape.ToString();
 
         private void CountEntities()
         {
