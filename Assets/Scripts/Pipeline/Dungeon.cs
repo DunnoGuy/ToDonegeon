@@ -19,10 +19,13 @@ namespace ToDonegeon.Pipeline
         public bool EntranceExitConnected { get; }
         public IReadOnlyList<Entity> Entities { get; }
 
+        // how many tries the generator made before this result (1 when the first was valid)
+        public int Attempts { get; }
+
         public Dungeon(
             int seed, Grid grid, BspTree tree, IReadOnlyList<Room> rooms, IReadOnlyList<RoomLink> links,
             RoomGraph graph, Room entrance, Room exit, GridConnectivity connectivity, bool entranceExitConnected,
-            IReadOnlyList<Entity> entities)
+            IReadOnlyList<Entity> entities, int attempts)
         {
             Seed = seed;
             Grid = grid;
@@ -35,6 +38,7 @@ namespace ToDonegeon.Pipeline
             Connectivity = connectivity;
             EntranceExitConnected = entranceExitConnected;
             Entities = entities;
+            Attempts = attempts;
         }
 
         public bool IsValid => Connectivity.IsFullyConnected && EntranceExitConnected;

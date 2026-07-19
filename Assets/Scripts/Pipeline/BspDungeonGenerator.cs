@@ -42,14 +42,14 @@ namespace ToDonegeon.Pipeline
             Dungeon dungeon = null;
             for (int attempt = 0; attempt < _maxAttempts; attempt++)
             {
-                dungeon = GenerateOnce(width, height, seed + attempt);
+                dungeon = GenerateOnce(width, height, seed + attempt, attempt + 1);
                 if (dungeon.IsValid) return dungeon;
             }
 
             return dungeon;
         }
 
-        private Dungeon GenerateOnce(int width, int height, int seed)
+        private Dungeon GenerateOnce(int width, int height, int seed, int attempt)
         {
             var rng = new Random(seed);
             var bounds = new GridRect(0, 0, width, height);
@@ -72,7 +72,8 @@ namespace ToDonegeon.Pipeline
             IReadOnlyList<Entity> entities = _populator.Populate(grid, rooms, links, entrance, exit, rng);
 
             return new Dungeon(
-                seed, grid, tree, rooms, links, graph, entrance, exit, connectivity, entranceExitConnected, entities);
+                seed, grid, tree, rooms, links, graph, entrance, exit, connectivity, entranceExitConnected,
+                entities, attempt);
         }
 
         private static void MarkEndpoints(Grid grid, Room entrance, Room exit)

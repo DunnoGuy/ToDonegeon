@@ -83,5 +83,22 @@ namespace ToDonegeon.Tests
             Assert.That(rawValid, Is.LessThan(seeds), "raw single-attempt validity should fall below 100%");
             Assert.That(retriedValid, Is.GreaterThan(rawValid), "retrying should recover more layouts");
         }
+
+        [Test]
+        public void Repaired_Caves_Succeed_On_The_First_Attempt()
+        {
+            for (int seed = 0; seed < 100; seed++)
+                Assert.That(Generate(Cave(), null, 8, seed).Attempts, Is.EqualTo(1), $"seed {seed}");
+        }
+
+        [Test]
+        public void Kept_Pockets_Sometimes_Force_A_Retry()
+        {
+            bool anyRetry = false;
+            for (int seed = 0; seed < 100 && !anyRetry; seed++)
+                if (Generate(Cave(repair: false), null, 8, seed).Attempts > 1) anyRetry = true;
+
+            Assert.That(anyRetry, Is.True);
+        }
     }
 }
