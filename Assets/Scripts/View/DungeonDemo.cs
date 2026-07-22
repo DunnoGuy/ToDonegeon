@@ -29,6 +29,9 @@ namespace ToDonegeon.View
         [SerializeField] private float _minFillRatio = RoomCarverSettings.DefaultMinFillRatio;
 
         [Header("Space type")]
+        [Tooltip("Carve each dungeon as contiguous zones of all three shapes")]
+        [SerializeField] private bool _mixSpaceTypes = true;
+        [Tooltip("Used only when Mix Space Types is off")]
         [SerializeField] private ChamberShape _chamberShape = ChamberShape.Rectangle;
         [SerializeField] private bool _enableLoops;
         [Tooltip("Cave chambers only")]
@@ -58,6 +61,9 @@ namespace ToDonegeon.View
         private const float PanelMargin = 10f;
         private const float LoopChance = 0.5f;
         private const int MaxLoops = 3;
+
+        private static readonly ChamberShape[] AllShapes =
+            { ChamberShape.Rectangle, ChamberShape.Cave, ChamberShape.RandomWalk };
 
         private static readonly System.Random SeedSource = new System.Random();
 
@@ -98,8 +104,9 @@ namespace ToDonegeon.View
             {
                 var bsp = new BspSettings(_minLeafSize, _maxLeafSize, _maxDepth);
                 var caveSettings = new CaveSettings(keepOnlyLargestComponent: _repairCavePockets);
+                ChamberShape[] mix = _mixSpaceTypes ? AllShapes : null;
                 var carver = new RoomCarverSettings(
-                    _edgePadding, _minRoomSize, _minFillRatio, _chamberShape, caveSettings);
+                    _edgePadding, _minRoomSize, _minFillRatio, _chamberShape, caveSettings, shapeMix: mix);
                 var populator = new PopulatorSettings(_maxChests, _maxEnemiesPerRoom, _difficultyTier);
                 var corridor = _enableLoops ? new CorridorSettings(LoopChance, MaxLoops) : null;
                 var generator = new BspDungeonGenerator(bsp, carver, populator, corridor);
@@ -169,7 +176,11 @@ namespace ToDonegeon.View
                 $"Reachable: {_dungeon.Connectivity.ReachableCount}/{_dungeon.Connectivity.WalkableCount} walkable");
         }
 
-        private string SpaceType() => _enableLoops ? $"{_chamberShape} + loops" : _chamberShape.ToString();
+        private string SpaceType()
+        {
+            string shape = _mixSpaceTypes ? "Mixed zones" : _chamberShape.ToString();
+            return _enableLoops ? $"{shape} + loops" : shape;
+        }
 
         private void CountEntities()
         {
