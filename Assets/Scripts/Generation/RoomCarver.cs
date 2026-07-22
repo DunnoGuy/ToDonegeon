@@ -20,19 +20,24 @@ namespace ToDonegeon.Generation
             if (tree == null) throw new ArgumentNullException(nameof(tree));
             if (rng == null) throw new ArgumentNullException(nameof(rng));
 
+            Dictionary<BspNode, ChamberShape> zoneShapes = BuildZoneShapes(tree, rng);
+
             var rooms = new List<Room>(tree.Leaves.Count);
             foreach (BspNode leaf in tree.Leaves)
             {
-                if (TryCarve(grid, leaf, rng, out Room room))
+                ChamberShape shape = zoneShapes != null && zoneShapes.TryGetValue(leaf, out ChamberShape zoned)
+                    ? zoned
+                    : _settings.Shape;
+                if (TryCarve(grid, leaf, shape, rng, out Room room))
                     rooms.Add(room);
             }
 
             return rooms;
         }
 
-        private bool TryCarve(Grid grid, BspNode leaf, Random rng, out Room room)
+        private bool TryCarve(Grid grid, BspNode leaf, ChamberShape shape, Random rng, out Room room)
         {
-            switch (_settings.Shape)
+            switch (shape)
             {
                 case ChamberShape.Cave:
                     return TryCarveCave(grid, leaf, rng, out room);
@@ -41,6 +46,44 @@ namespace ToDonegeon.Generation
                 default:
                     return TryCarveRectangle(grid, leaf, rng, out room);
             }
+        }
+
+        // Draws one shape per BSP subtree down to the zone depth and hands it to every leaf below.
+        // Null when no mix is configured.
+        private Dictionary<BspNode, ChamberShape> BuildZoneShapes(BspTree tree, Random rng)
+        {
+            IReadOnlyList<ChamberShape> mix = _settings.ShapeMix;
+            if (mix == null || mix.Count == 0) return null;
+
+            var shapes = new Dictionary<BspNode, ChamberShape>();
+            AssignZone(tree.Root, 0, mix, rng, shapes);
+            return shapes;
+        }
+
+        private void AssignZone(
+            BspNode node, int depth, IReadOnlyList<ChamberShape> mix, Random rng,
+            Dictionary<BspNode, ChamberShape> shapes)
+        {
+            if (node.IsLeaf || depth >= _settings.ShapeZoneDepth)
+            {
+                AssignLeaves(node, mix[rng.Next(mix.Count)], shapes);
+                return;
+            }
+
+            AssignZone(node.Left, depth + 1, mix, rng, shapes);
+            AssignZone(node.Right, depth + 1, mix, rng, shapes);
+        }
+
+        private static void AssignLeaves(BspNode node, ChamberShape shape, Dictionary<BspNode, ChamberShape> shapes)
+        {
+            if (node.IsLeaf)
+            {
+                shapes[node] = shape;
+                return;
+            }
+
+            AssignLeaves(node.Left, shape, shapes);
+            AssignLeaves(node.Right, shape, shapes);
         }
 
         private bool TryCarveRectangle(Grid grid, BspNode leaf, Random rng, out Room room)
@@ -75,7 +118,7 @@ namespace ToDonegeon.Generation
             }
 
             CaveResult cave = new CellularAutomata(_settings.CaveSettings).Fill(grid, region, rng);
-            room = new Room(cave.FloorBounds, leaf, cave.Anchor);
+            room = new Room(cave.FloorBounds, leaf, cave.Anchor, ChamberShape.Cave);
             return true;
         }
 
@@ -89,7 +132,7 @@ namespace ToDonegeon.Generation
             }
 
             WalkResult walk = new RandomWalk(_settings.WalkSettings).Carve(grid, region, rng);
-            room = new Room(walk.FloorBounds, leaf, walk.Anchor);
+            room = new Room(walk.FloorBounds, leaf, walk.Anchor, ChamberShape.RandomWalk);
             return true;
         }
 

@@ -10,15 +10,19 @@ namespace ToDonegeon.Generation
 
         public BspNode Leaf { get; }
 
+        // which technique carved this chamber
+        public ChamberShape Shape { get; }
+
         // an explicit floor cell for organic chambers, whose middle can land on wall,
         // otherwise the geometric centre of the bounds
         public Coord Center => _centre ?? Bounds.Center;
 
-        public Room(GridRect bounds, BspNode leaf, Coord? centre = null)
+        public Room(GridRect bounds, BspNode leaf, Coord? centre = null, ChamberShape shape = ChamberShape.Rectangle)
         {
             Bounds = bounds;
             Leaf = leaf ?? throw new ArgumentNullException(nameof(leaf));
             _centre = centre;
+            Shape = shape;
         }
     }
 }
