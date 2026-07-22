@@ -117,7 +117,7 @@ namespace ToDonegeon.View
 
                 if (_renderer != null)
                 {
-                    _renderer.Render(_dungeon.Grid);
+                    _renderer.Render(_dungeon.Grid, _dungeon.Rooms);
                     if (_frameCameraToDungeon) FrameCamera();
                 }
                 if (_entitySpawner != null) _entitySpawner.Spawn(_dungeon.Entities);
