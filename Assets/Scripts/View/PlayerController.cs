@@ -59,6 +59,7 @@ namespace ToDonegeon.View
             _isHopping = false;
             _path = null;
             _lastMessage = null;
+            EnsureCharacter();
             _character.Health.ResetToFull();
             transform.position = CellCenter(startCell);
         }
@@ -67,7 +68,14 @@ namespace ToDonegeon.View
         {
             if (_camera == null) _camera = Camera.main;
             if (_entitySpawner == null) _entitySpawner = FindAnyObjectByType<EntitySpawner>();
-            _character = new PlayerCharacter(Mathf.Max(1, _maxHealth), Mathf.Max(0, _attackPower));
+            EnsureCharacter();
+        }
+
+        // Builds the character on first use, so Place still works when it runs before Awake
+        private void EnsureCharacter()
+        {
+            if (_character == null)
+                _character = new PlayerCharacter(Mathf.Max(1, _maxHealth), Mathf.Max(0, _attackPower));
         }
 
         private void Update()
