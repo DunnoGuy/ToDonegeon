@@ -20,6 +20,7 @@ namespace ToDonegeon.View
 
         private readonly List<GameObject> _spawned = new List<GameObject>();
         private readonly Dictionary<Coord, IInteractable> _interactables = new Dictionary<Coord, IInteractable>();
+        private readonly List<Enemy> _enemies = new List<Enemy>();
 
         // Clears the previous batch and spawns a prefab for every entity that has one assigned.
         public void Spawn(IReadOnlyList<Entity> entities)
@@ -39,6 +40,11 @@ namespace ToDonegeon.View
 
                 if (instance.TryGetComponent(out IInteractable interactable))
                     _interactables[entity.Position] = interactable;
+                if (instance.TryGetComponent(out Enemy enemy))
+                {
+                    enemy.Initialise(entity.Position, _tilemap);
+                    _enemies.Add(enemy);
+                }
             }
         }
 
@@ -64,6 +70,21 @@ namespace ToDonegeon.View
         // forget the interactable on the cell after the player has consumed it
         public void Remove(Coord cell) => _interactables.Remove(cell);
 
+        public IReadOnlyList<Enemy> Enemies => _enemies;
+
+        public IEnumerable<Coord> OccupiedCells => _interactables.Keys;
+
+        // re-keys the moving entity's interactable entry so bump-to-act keeps finding it
+        public void Move(Coord from, Coord to)
+        {
+            if (from == to) return;
+            if (_interactables.TryGetValue(from, out IInteractable interactable))
+            {
+                _interactables.Remove(from);
+                _interactables[to] = interactable;
+            }
+        }
+
         // destroy all currently spawned entity GameObjects
         public void Clear()
         {
@@ -71,6 +92,7 @@ namespace ToDonegeon.View
                 if (instance != null) Destroy(instance);
             _spawned.Clear();
             _interactables.Clear();
+            _enemies.Clear();
         }
 
         private void EnsureRefs()
