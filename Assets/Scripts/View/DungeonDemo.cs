@@ -46,6 +46,7 @@ namespace ToDonegeon.View
         [SerializeField] private DungeonRenderer _renderer;
         [SerializeField] private EntitySpawner _entitySpawner;
         [SerializeField] private PlayerController _player;
+        [SerializeField] private EnemyDirector _enemyDirector;
         [SerializeField] private Camera _camera;
 
         [Tooltip("Frame the whole dungeon on generate")]
@@ -77,6 +78,7 @@ namespace ToDonegeon.View
         {
             if (_renderer == null) _renderer = GetComponentInChildren<DungeonRenderer>();
             if (_entitySpawner == null) _entitySpawner = GetComponentInChildren<EntitySpawner>();
+            if (_enemyDirector == null) _enemyDirector = FindAnyObjectByType<EnemyDirector>();
             if (_camera == null) _camera = Camera.main;
             if (_randomSeedOnStart) _seed = SeedSource.Next();
 
@@ -123,6 +125,8 @@ namespace ToDonegeon.View
                 if (_entitySpawner != null) _entitySpawner.Spawn(_dungeon.Entities);
                 if (_player != null && _dungeon.Entrance != null)
                     _player.Place(_dungeon.Grid, _dungeon.Entrance.Center);
+                if (_enemyDirector != null)
+                    _enemyDirector.Bind(_dungeon.Grid, _player, _entitySpawner, _seed);
 
                 Debug.Log($"[DungeonDemo] seed={_dungeon.Seed} shape={SpaceType()} rooms={_dungeon.Rooms.Count} " +
                     $"valid={_dungeon.IsValid} attempts={_dungeon.Attempts} entities={_dungeon.Entities.Count}");

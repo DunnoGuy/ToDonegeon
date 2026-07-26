@@ -48,10 +48,10 @@ namespace ToDonegeon.View
 
         public InteractionResult Interact(PlayerCharacter player)
         {
-            BumpOutcome outcome = Combat.ResolveBump(player, Character);
+            StrikeOutcome outcome = Combat.Strike(player, Character);
             string message = outcome.TargetKilled
                 ? $"Slew enemy (dealt {outcome.DamageDealt})"
-                : $"Hit enemy for {outcome.DamageDealt}; took {outcome.DamageTaken}";
+                : $"Hit enemy for {outcome.DamageDealt}";
 
             if (outcome.TargetKilled) Destroy(gameObject);
             return new InteractionResult(outcome.TargetKilled, blocksMovement: true, message: message);
