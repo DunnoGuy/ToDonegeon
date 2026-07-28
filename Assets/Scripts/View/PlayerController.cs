@@ -86,6 +86,7 @@ namespace ToDonegeon.View
                 return;
             }
             if (!_placed) return;
+            if (!_character.IsAlive) return; // no turns once dead
 
             if (TryReadKeyboardStep(out Coord step))
             {

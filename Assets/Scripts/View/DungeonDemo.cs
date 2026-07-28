@@ -60,6 +60,8 @@ namespace ToDonegeon.View
         private const float PanelWidth = 320f;
         private const float PanelHeight = 232f;
         private const float PanelMargin = 10f;
+        private const float GameOverWidth = 240f;
+        private const float GameOverHeight = 96f;
         private const float LoopChance = 0.5f;
         private const int MaxLoops = 3;
 
@@ -169,6 +171,23 @@ namespace ToDonegeon.View
             if (GUILayout.Button($"New dungeon  (key: {_regenerateKey})")) Regenerate();
             if (GUILayout.Button("Replay this seed")) Generate();
 
+            GUILayout.EndArea();
+
+            if (PlayerIsDead) DrawGameOver();
+        }
+
+        private bool PlayerIsDead =>
+            _player != null && _player.Character != null && !_player.Character.IsAlive;
+
+        // Centered overlay shown once an enemy turn kills the player
+        private void DrawGameOver()
+        {
+            float x = (Screen.width - GameOverWidth) * 0.5f;
+            float y = (Screen.height - GameOverHeight) * 0.5f;
+            GUILayout.BeginArea(new Rect(x, y, GameOverWidth, GameOverHeight), GUI.skin.box);
+            GUILayout.Label("You died.");
+            GUILayout.Label("The dungeon claims another.");
+            if (GUILayout.Button($"New run  (key: {_regenerateKey})")) Regenerate();
             GUILayout.EndArea();
         }
 
