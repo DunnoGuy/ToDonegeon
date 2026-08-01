@@ -8,10 +8,12 @@ namespace ToDonegeon.Generation
     public sealed class DungeonPopulator
     {
         private readonly PopulatorSettings _settings;
+        private readonly DifficultyProfile _profile;
 
         public DungeonPopulator(PopulatorSettings settings)
         {
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            _profile = DifficultyProfile.Default;
         }
 
         public IReadOnlyList<Entity> Populate(
@@ -43,7 +45,7 @@ namespace ToDonegeon.Generation
             if (bossRoom == null) return;
             if (TryPickFloorCell(grid, bossRoom, occupied, rng, out Coord cell))
             {
-                entities.Add(new Entity(cell, EntityKind.Boss));
+                entities.Add(new Entity(cell, EntityKind.Boss, _profile.ForBoss(_settings.DifficultyTier)));
                 occupied.Add(cell);
             }
         }
@@ -103,7 +105,7 @@ namespace ToDonegeon.Generation
                 for (int i = 0; i < count; i++)
                 {
                     if (!TryPickFloorCell(grid, room, occupied, rng, out Coord cell)) break;
-                    entities.Add(new Entity(cell, EntityKind.Enemy));
+                    entities.Add(new Entity(cell, EntityKind.Enemy, _profile.ForEnemy(_settings.DifficultyTier)));
                     occupied.Add(cell);
                 }
             }

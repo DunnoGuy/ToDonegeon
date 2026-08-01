@@ -16025,6 +16025,7 @@ GameObject:
   - component: {fileID: 1697926940}
   - component: {fileID: 1697926943}
   - component: {fileID: 1697926944}
+  - component: {fileID: 1697926945}
   m_Layer: 0
   m_Name: Dungeon Demo
   m_TagString: Untagged
@@ -16064,6 +16065,7 @@ MonoBehaviour:
   _renderer: {fileID: 1697926941}
   _entitySpawner: {fileID: 1697926943}
   _player: {fileID: 2143422499}
+  _enemyDirector: {fileID: 0}
   _camera: {fileID: 519420031}
   _frameCameraToDungeon: 0
   _regenerateKey: 32
@@ -16132,6 +16134,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: ToDonegeon.View::ToDonegeon.View.TaskPanel
   _player: {fileID: 2143422499}
+--- !u!114 &1697926945
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1697926939}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc270d5a8c106754bbe97c9dbcc2e09c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ToDonegeon.View::ToDonegeon.View.EnemyDirector
 --- !u!1 &1941868603
 GameObject:
   m_ObjectHideFlags: 0
