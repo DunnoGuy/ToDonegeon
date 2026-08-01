@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using ToDonegeon.Generation;
@@ -14,26 +15,8 @@ namespace ToDonegeon.Tests
             => new BspDungeonGenerator(null, null, new PopulatorSettings(difficultyTier: tier))
                 .Generate(Width, Height, seed);
 
-        [Test]
-        public void Enemies_Spawn_With_The_Tier_Enemy_Stats()
-        {
-            Dungeon dungeon = Generate(7, tier: 2);
-            CombatStats expected = DifficultyProfile.Default.ForEnemy(2);
-
-            var enemies = dungeon.Entities.Where(e => e.Kind == EntityKind.Enemy).ToList();
-            Assert.That(enemies, Is.Not.Empty);
-            foreach (Entity enemy in enemies)
-                Assert.That(enemy.Stats.Value, Is.EqualTo(expected));
-        }
-
-        [Test]
-        public void The_Boss_Spawns_With_The_Tier_Boss_Stats()
-        {
-            Dungeon dungeon = Generate(3, tier: 1);
-            Entity boss = dungeon.Entities.First(e => e.Kind == EntityKind.Boss);
-
-            Assert.That(boss.Stats.Value, Is.EqualTo(DifficultyProfile.Default.ForBoss(1)));
-        }
+        private static List<CombatStats> Enemies(Dungeon dungeon)
+            => dungeon.Entities.Where(e => e.Kind == EntityKind.Enemy).Select(e => e.Stats.Value).ToList();
 
         [Test]
         public void Chests_Carry_No_Combat_Stats()
@@ -44,16 +27,48 @@ namespace ToDonegeon.Tests
         }
 
         [Test]
-        public void Higher_Tier_Stamps_Tougher_Enemies()
+        public void Enemy_Strength_Stays_Within_The_Floor_Ramp_Band()
         {
-            CombatStats low = FirstEnemyStats(Generate(11, tier: 1));
-            CombatStats high = FirstEnemyStats(Generate(11, tier: 4));
+            const int tier = 2;
+            int floorMin = DifficultyProfile.Default.ForEnemy(tier).MaxHealth;
+            int floorMax = DifficultyProfile.Default.ForEnemy(tier + DungeonPopulator.IntraDungeonRampTiers).MaxHealth;
 
-            Assert.That(high.MaxHealth, Is.GreaterThan(low.MaxHealth));
-            Assert.That(high.AttackPower, Is.GreaterThan(low.AttackPower));
+            foreach (CombatStats stats in Enemies(Generate(7, tier)))
+                Assert.That(stats.MaxHealth, Is.InRange(floorMin, floorMax));
         }
 
-        private static CombatStats FirstEnemyStats(Dungeon dungeon)
-            => dungeon.Entities.First(e => e.Kind == EntityKind.Enemy).Stats.Value;
+        [Test]
+        public void Difficulty_Ramps_Within_A_Floor()
+        {
+            // at least one floor puts weaker and stronger foes on the same map
+            int rampedFloors = 0;
+            for (int seed = 0; seed < 12; seed++)
+            {
+                int distinct = Enemies(Generate(seed, tier: 2)).Select(s => s.MaxHealth).Distinct().Count();
+                if (distinct > 1) rampedFloors++;
+            }
+
+            Assert.That(rampedFloors, Is.GreaterThan(0));
+        }
+
+        [Test]
+        public void A_Deeper_Floor_Outclasses_A_Shallower_One()
+        {
+            int weakestDeep = Enemies(Generate(11, tier: 4)).Min(s => s.MaxHealth);
+            int strongestShallow = Enemies(Generate(11, tier: 1)).Max(s => s.MaxHealth);
+
+            Assert.That(weakestDeep, Is.GreaterThan(strongestShallow));
+        }
+
+        [Test]
+        public void The_Boss_Is_Never_Weaker_Than_The_Floor_And_Beats_Every_Enemy()
+        {
+            Dungeon dungeon = Generate(3, tier: 1);
+            CombatStats boss = dungeon.Entities.First(e => e.Kind == EntityKind.Boss).Stats.Value;
+
+            Assert.That(boss.MaxHealth, Is.GreaterThanOrEqualTo(DifficultyProfile.Default.ForBoss(1).MaxHealth));
+            foreach (CombatStats enemy in Enemies(dungeon))
+                Assert.That(boss.MaxHealth, Is.GreaterThan(enemy.MaxHealth));
+        }
     }
 }
