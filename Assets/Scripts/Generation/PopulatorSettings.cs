@@ -12,7 +12,7 @@ namespace ToDonegeon.Generation
 
         public int MaxEnemiesPerRoom { get; }
 
-        // Scales enemy counts
+        // Scales enemy and boss stats, not their number
         public int DifficultyTier { get; }
 
         public PopulatorSettings(
@@ -32,7 +32,7 @@ namespace ToDonegeon.Generation
             DifficultyTier = difficultyTier;
         }
 
-        // The effective per-room enemy cap after applying the difficulty tier.
-        public int EnemyCapPerRoom => MaxEnemiesPerRoom * DifficultyTier;
+        // the most enemies that may spawn in one room
+        public int EnemyCapPerRoom => MaxEnemiesPerRoom;
     }
 }

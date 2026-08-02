@@ -116,17 +116,17 @@ namespace ToDonegeon.Tests
         }
 
         [Test]
-        public void Higher_Difficulty_Tier_Yields_More_Enemies()
+        public void Denser_Rooms_Yield_More_Enemies()
         {
-            int EnemyTotal(int tier)
+            int EnemyTotal(int perRoom)
             {
                 int total = 0;
                 for (int seed = 0; seed < 30; seed++)
-                    total += CountOf(Generate(seed, new PopulatorSettings(difficultyTier: tier)), EntityKind.Enemy);
+                    total += CountOf(Generate(seed, new PopulatorSettings(maxEnemiesPerRoom: perRoom)), EntityKind.Enemy);
                 return total;
             }
 
-            Assert.That(EnemyTotal(3), Is.GreaterThan(EnemyTotal(1)));
+            Assert.That(EnemyTotal(4), Is.GreaterThan(EnemyTotal(1)));
         }
 
         [Test]
@@ -153,9 +153,9 @@ namespace ToDonegeon.Tests
         }
 
         [Test]
-        public void Enemy_Cap_Scales_With_Difficulty_Tier()
+        public void Enemy_Cap_Is_The_Per_Room_Maximum()
         {
-            Assert.That(new PopulatorSettings(maxEnemiesPerRoom: 2, difficultyTier: 3).EnemyCapPerRoom, Is.EqualTo(6));
+            Assert.That(new PopulatorSettings(maxEnemiesPerRoom: 2, difficultyTier: 3).EnemyCapPerRoom, Is.EqualTo(2));
         }
     }
 }
