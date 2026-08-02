@@ -11,12 +11,10 @@ namespace ToDonegeon.Generation
         public const int IntraDungeonRampTiers = 2;
 
         private readonly PopulatorSettings _settings;
-        private readonly DifficultyProfile _profile;
 
         public DungeonPopulator(PopulatorSettings settings)
         {
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
-            _profile = DifficultyProfile.Default;
         }
 
         public IReadOnlyList<Entity> Populate(
@@ -52,7 +50,7 @@ namespace ToDonegeon.Generation
             if (bossRoom == null) return;
             if (TryPickFloorCell(grid, bossRoom, occupied, rng, out Coord cell))
             {
-                entities.Add(new Entity(cell, EntityKind.Boss, _profile.ForBoss(TierOf(bossRoom, localTiers))));
+                entities.Add(new Entity(cell, EntityKind.Boss, DifficultyProfile.ForBoss(TierOf(bossRoom, localTiers))));
                 occupied.Add(cell);
             }
         }
@@ -109,7 +107,7 @@ namespace ToDonegeon.Generation
             {
                 if (room == entrance) continue;
 
-                CombatStats stats = _profile.ForEnemy(TierOf(room, localTiers));
+                CombatStats stats = DifficultyProfile.ForEnemy(TierOf(room, localTiers));
                 int count = rng.Next(0, cap + 1);
                 for (int i = 0; i < count; i++)
                 {

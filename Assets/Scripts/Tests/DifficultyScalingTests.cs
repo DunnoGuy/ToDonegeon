@@ -22,19 +22,19 @@ namespace ToDonegeon.Tests
     public class DifficultyProfileTests
     {
         [Test]
-        public void Tier_One_Enemy_Uses_The_Baseline_Stats()
+        public void Tier_One_Is_The_Baseline_Foe()
         {
-            CombatStats stats = DifficultyProfile.Default.ForEnemy(1);
+            CombatStats stats = DifficultyProfile.ForEnemy(1);
 
-            Assert.That(stats.MaxHealth, Is.EqualTo(DifficultyProfile.DefaultBaseHealth));
-            Assert.That(stats.AttackPower, Is.EqualTo(DifficultyProfile.DefaultBaseAttack));
+            Assert.That(stats.MaxHealth, Is.EqualTo(12));
+            Assert.That(stats.AttackPower, Is.EqualTo(3));
         }
 
         [Test]
-        public void Enemy_Stats_Grow_With_The_Tier()
+        public void Enemy_Stats_Grow_Each_Tier()
         {
-            CombatStats tier1 = DifficultyProfile.Default.ForEnemy(1);
-            CombatStats tier4 = DifficultyProfile.Default.ForEnemy(4);
+            CombatStats tier1 = DifficultyProfile.ForEnemy(1);
+            CombatStats tier4 = DifficultyProfile.ForEnemy(4);
 
             Assert.That(tier4.MaxHealth, Is.GreaterThan(tier1.MaxHealth));
             Assert.That(tier4.AttackPower, Is.GreaterThan(tier1.AttackPower));
@@ -43,64 +43,51 @@ namespace ToDonegeon.Tests
         [Test]
         public void Enemy_Growth_Is_Linear_In_The_Tier()
         {
-            var profile = new DifficultyProfile(
-                baseHealth: 10, baseAttack: 2, healthPerTier: 5, attackPerTier: 2);
+            // +6 health and +1 attack per tier above the first
+            CombatStats tier3 = DifficultyProfile.ForEnemy(3);
 
-            CombatStats tier3 = profile.ForEnemy(3);
-
-            // two steps above tier 1
-            Assert.That(tier3.MaxHealth, Is.EqualTo(10 + 2 * 5));
-            Assert.That(tier3.AttackPower, Is.EqualTo(2 + 2 * 2));
+            Assert.That(tier3.MaxHealth, Is.EqualTo(12 + 2 * 6));
+            Assert.That(tier3.AttackPower, Is.EqualTo(3 + 2 * 1));
         }
 
         [Test]
-        public void Boss_Is_Tougher_Than_An_Enemy_Of_The_Same_Tier()
+        public void Boss_Is_Tougher_Than_A_Same_Tier_Enemy()
         {
-            CombatStats enemy = DifficultyProfile.Default.ForEnemy(2);
-            CombatStats boss = DifficultyProfile.Default.ForBoss(2);
+            CombatStats enemy = DifficultyProfile.ForEnemy(2);
+            CombatStats boss = DifficultyProfile.ForBoss(2);
 
             Assert.That(boss.MaxHealth, Is.GreaterThan(enemy.MaxHealth));
             Assert.That(boss.AttackPower, Is.GreaterThan(enemy.AttackPower));
         }
 
         [Test]
-        public void Boss_Applies_The_Multiplier_And_Bonus()
+        public void Boss_Multiplies_Health_And_Adds_Attack()
         {
-            var profile = new DifficultyProfile(
-                baseHealth: 10, baseAttack: 3, healthPerTier: 0, attackPerTier: 0,
-                bossHealthMultiplier: 4, bossAttackBonus: 2);
+            // a boss is x4 health and +3 attack over the same-tier enemy
+            CombatStats enemy = DifficultyProfile.ForEnemy(1);
+            CombatStats boss = DifficultyProfile.ForBoss(1);
 
-            CombatStats boss = profile.ForBoss(1);
-
-            Assert.That(boss.MaxHealth, Is.EqualTo(10 * 4));
-            Assert.That(boss.AttackPower, Is.EqualTo(3 + 2));
+            Assert.That(boss.MaxHealth, Is.EqualTo(enemy.MaxHealth * 4));
+            Assert.That(boss.AttackPower, Is.EqualTo(enemy.AttackPower + 3));
         }
 
         [Test]
         public void For_Kind_Gives_No_Stats_To_A_Chest()
         {
-            Assert.That(DifficultyProfile.Default.ForKind(EntityKind.Chest, 1), Is.Null);
+            Assert.That(DifficultyProfile.ForKind(EntityKind.Chest, 1), Is.Null);
         }
 
         [Test]
         public void For_Kind_Matches_The_Enemy_And_Boss_Helpers()
         {
-            DifficultyProfile profile = DifficultyProfile.Default;
-
-            Assert.That(profile.ForKind(EntityKind.Enemy, 3), Is.EqualTo(profile.ForEnemy(3)));
-            Assert.That(profile.ForKind(EntityKind.Boss, 3), Is.EqualTo(profile.ForBoss(3)));
+            Assert.That(DifficultyProfile.ForKind(EntityKind.Enemy, 3), Is.EqualTo(DifficultyProfile.ForEnemy(3)));
+            Assert.That(DifficultyProfile.ForKind(EntityKind.Boss, 3), Is.EqualTo(DifficultyProfile.ForBoss(3)));
         }
 
         [Test]
         public void Tier_Below_One_Is_Rejected()
         {
-            Assert.Throws<ArgumentOutOfRangeException>(() => DifficultyProfile.Default.ForEnemy(0));
-        }
-
-        [Test]
-        public void Rejects_A_Boss_Multiplier_Below_One()
-        {
-            Assert.Throws<ArgumentOutOfRangeException>(() => new DifficultyProfile(bossHealthMultiplier: 0));
+            Assert.Throws<ArgumentOutOfRangeException>(() => DifficultyProfile.ForEnemy(0));
         }
     }
 }

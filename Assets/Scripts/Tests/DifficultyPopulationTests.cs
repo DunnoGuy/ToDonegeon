@@ -30,8 +30,8 @@ namespace ToDonegeon.Tests
         public void Enemy_Strength_Stays_Within_The_Floor_Ramp_Band()
         {
             const int tier = 2;
-            int floorMin = DifficultyProfile.Default.ForEnemy(tier).MaxHealth;
-            int floorMax = DifficultyProfile.Default.ForEnemy(tier + DungeonPopulator.IntraDungeonRampTiers).MaxHealth;
+            int floorMin = DifficultyProfile.ForEnemy(tier).MaxHealth;
+            int floorMax = DifficultyProfile.ForEnemy(tier + DungeonPopulator.IntraDungeonRampTiers).MaxHealth;
 
             foreach (CombatStats stats in Enemies(Generate(7, tier)))
                 Assert.That(stats.MaxHealth, Is.InRange(floorMin, floorMax));
@@ -66,7 +66,7 @@ namespace ToDonegeon.Tests
             Dungeon dungeon = Generate(3, tier: 1);
             CombatStats boss = dungeon.Entities.First(e => e.Kind == EntityKind.Boss).Stats.Value;
 
-            Assert.That(boss.MaxHealth, Is.GreaterThanOrEqualTo(DifficultyProfile.Default.ForBoss(1).MaxHealth));
+            Assert.That(boss.MaxHealth, Is.GreaterThanOrEqualTo(DifficultyProfile.ForBoss(1).MaxHealth));
             foreach (CombatStats enemy in Enemies(dungeon))
                 Assert.That(boss.MaxHealth, Is.GreaterThan(enemy.MaxHealth));
         }
