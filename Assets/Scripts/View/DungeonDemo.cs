@@ -69,6 +69,7 @@ namespace ToDonegeon.View
 
         private Dungeon _dungeon;
         private FloorPlan _floor;
+        private int _depth;
         private string _error;
         private int _bossCount;
         private int _chestCount;
@@ -82,24 +83,57 @@ namespace ToDonegeon.View
             if (_camera == null) _camera = Camera.main;
             if (_randomSeedOnStart) _seed = SeedSource.Next();
 
+            _depth = Mathf.Max(1, _startDepth);
+            if (_player != null) _player.ReachedExit += OnReachedExit;
             Generate();
         }
 
-        // the floor the run is on, clamped so it is always a valid tier
-        private int CurrentDepth => Mathf.Max(1, _startDepth);
+        private void OnDisable()
+        {
+            if (_player != null) _player.ReachedExit -= OnReachedExit;
+        }
+
+        // the floor the run is on: the live depth in play, or the starting depth in edit-mode preview
+        // where Start has not run. always clamped to a valid tier
+        private int CurrentDepth => _depth >= 1 ? _depth : Mathf.Max(1, _startDepth);
 
         private void Update()
         {
             Keyboard keyboard = Keyboard.current;
             if (keyboard != null && keyboard[_regenerateKey].wasPressedThisFrame)
-                Regenerate();
+            {
+                if (PlayerIsDead) NewRun();
+                else Regenerate();
+            }
         }
 
-        // Generates and renders a fresh dungeon using a new random seed
+        // Generates and renders a fresh dungeon on the current floor using a new random seed
         public void Regenerate()
         {
             _seed = SeedSource.Next();
             Generate();
+        }
+
+        // drops to the next, deeper floor at full health
+        private void Descend()
+        {
+            _depth = CurrentDepth + 1;
+            _seed = SeedSource.Next();
+            Generate();
+        }
+
+        // starts a fresh run back at the opening floor
+        private void NewRun()
+        {
+            _depth = Mathf.Max(1, _startDepth);
+            _seed = SeedSource.Next();
+            Generate();
+        }
+
+        private void OnReachedExit()
+        {
+            if (PlayerIsDead) return; // died on the step onto the exit
+            Descend();
         }
 
         // generates and renders a dungeon for the current seed and settings
@@ -189,7 +223,7 @@ namespace ToDonegeon.View
             GUILayout.BeginArea(new Rect(x, y, GameOverWidth, GameOverHeight), GUI.skin.box);
             GUILayout.Label("You died.");
             GUILayout.Label("The dungeon claims another.");
-            if (GUILayout.Button($"New run  (key: {_regenerateKey})")) Regenerate();
+            if (GUILayout.Button($"New run  (key: {_regenerateKey})")) NewRun();
             GUILayout.EndArea();
         }
 

@@ -47,6 +47,8 @@ namespace ToDonegeon.View
         // manager uses to run enemy turns and to gate input while enemies are in sight.
         public event System.Action<Coord> Moved;
 
+        public event System.Action ReachedExit;
+
         public Coord Cell => _cell;
         public PlayerCharacter Character => _character;
 
@@ -142,6 +144,7 @@ namespace ToDonegeon.View
             _cell = to;
             BeginHop(CellCenter(to));
             Moved?.Invoke(_cell);
+            if (_grid[to] == TileType.Exit) ReachedExit?.Invoke();
         }
 
         // An attack or loot still costs a turn

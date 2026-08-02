@@ -16046,13 +16046,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 72add3f0ec5dda049b4affb1e6ff9f9f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: ToDonegeon.View::ToDonegeon.View.DungeonDemo
-  _width: 48
-  _height: 32
   _seed: 0
   _randomSeedOnStart: 1
   _minLeafSize: 8
   _maxLeafSize: 22
-  _maxDepth: 6
   _edgePadding: 1
   _minRoomSize: 4
   _minFillRatio: 0.6
@@ -16061,8 +16058,7 @@ MonoBehaviour:
   _enableLoops: 1
   _repairCavePockets: 1
   _maxChests: 5
-  _maxEnemiesPerRoom: 2
-  _difficultyTier: 1
+  _startDepth: 1
   _renderer: {fileID: 1697926941}
   _entitySpawner: {fileID: 1697926943}
   _player: {fileID: 2143422499}
