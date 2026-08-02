@@ -9,10 +9,6 @@ namespace ToDonegeon.View
     // and shows the seed and connectivity result.
     public sealed class DungeonDemo : MonoBehaviour
     {
-        [Header("Dungeon size (cells)")]
-        [SerializeField] private int _width = 48;
-        [SerializeField] private int _height = 32;
-
         [Header("Seed")]
         [SerializeField] private int _seed;
         [SerializeField] private bool _randomSeedOnStart = true;
@@ -20,7 +16,6 @@ namespace ToDonegeon.View
         [Header("BSP partition")]
         [SerializeField] private int _minLeafSize = BspSettings.DefaultMinLeafSize;
         [SerializeField] private int _maxLeafSize = BspSettings.DefaultMaxLeafSize;
-        [SerializeField] private int _maxDepth = BspSettings.DefaultMaxDepth;
 
         [Header("Rooms")]
         [SerializeField] private int _edgePadding = RoomCarverSettings.DefaultEdgePadding;
@@ -39,8 +34,10 @@ namespace ToDonegeon.View
 
         [Header("Populate")]
         [SerializeField] private int _maxChests = PopulatorSettings.DefaultMaxChests;
-        [SerializeField] private int _maxEnemiesPerRoom = PopulatorSettings.DefaultMaxEnemiesPerRoom;
-        [SerializeField] private int _difficultyTier = PopulatorSettings.DefaultDifficultyTier;
+
+        [Header("Difficulty")]
+        [Tooltip("Floor the run starts on and deeper floors grow larger and harder")]
+        [SerializeField] private int _startDepth = 1;
 
         [Header("References")]
         [SerializeField] private DungeonRenderer _renderer;
@@ -71,6 +68,7 @@ namespace ToDonegeon.View
         private static readonly System.Random SeedSource = new System.Random();
 
         private Dungeon _dungeon;
+        private FloorPlan _floor;
         private string _error;
         private int _bossCount;
         private int _chestCount;
@@ -86,6 +84,9 @@ namespace ToDonegeon.View
 
             Generate();
         }
+
+        // the floor the run is on, clamped so it is always a valid tier
+        private int CurrentDepth => Mathf.Max(1, _startDepth);
 
         private void Update()
         {
@@ -106,16 +107,17 @@ namespace ToDonegeon.View
         {
             try
             {
-                var bsp = new BspSettings(_minLeafSize, _maxLeafSize, _maxDepth);
+                _floor = DifficultyPlan.ForTier(CurrentDepth);
+                var bsp = new BspSettings(_minLeafSize, _maxLeafSize, _floor.MaxBspDepth);
                 var caveSettings = new CaveSettings(keepOnlyLargestComponent: _repairCavePockets);
                 ChamberShape[] mix = _mixSpaceTypes ? AllShapes : null;
                 var carver = new RoomCarverSettings(
                     _edgePadding, _minRoomSize, _minFillRatio, _chamberShape, caveSettings, shapeMix: mix);
-                var populator = new PopulatorSettings(_maxChests, _maxEnemiesPerRoom, _difficultyTier);
+                var populator = new PopulatorSettings(_maxChests, _floor.MaxEnemiesPerRoom, _floor.Tier);
                 var corridor = _enableLoops ? new CorridorSettings(LoopChance, MaxLoops) : null;
                 var generator = new BspDungeonGenerator(bsp, carver, populator, corridor);
 
-                _dungeon = generator.Generate(_width, _height, _seed);
+                _dungeon = generator.Generate(_floor.Width, _floor.Height, _seed);
                 _error = null;
                 CountEntities();
 
@@ -130,7 +132,7 @@ namespace ToDonegeon.View
                 if (_enemyDirector != null)
                     _enemyDirector.Bind(_dungeon.Grid, _player, _entitySpawner, _seed);
 
-                Debug.Log($"[DungeonDemo] seed={_dungeon.Seed} shape={SpaceType()} rooms={_dungeon.Rooms.Count} " +
+                Debug.Log($"[DungeonDemo] depth={_floor.Tier} seed={_dungeon.Seed} shape={SpaceType()} rooms={_dungeon.Rooms.Count} " +
                     $"valid={_dungeon.IsValid} attempts={_dungeon.Attempts} entities={_dungeon.Entities.Count}");
             }
             catch (System.Exception ex)
@@ -161,7 +163,7 @@ namespace ToDonegeon.View
             {
                 GUILayout.Label($"Seed: {_dungeon.Seed}");
                 GUILayout.Label($"Space type: {SpaceType()}");
-                GUILayout.Label($"Size: {_width} x {_height}   Rooms: {_dungeon.Rooms.Count}");
+                GUILayout.Label($"Depth: {_floor.Tier}   Size: {_floor.Width} x {_floor.Height}   Rooms: {_dungeon.Rooms.Count}");
                 GridConnectivityLabel();
                 GUILayout.Label($"Boss: {_bossCount}   Chests: {_chestCount}   Enemies: {_enemyCount}");
             }
