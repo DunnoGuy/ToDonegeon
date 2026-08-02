@@ -29,11 +29,13 @@ namespace ToDonegeon.View
 
         private void Awake() => EnsureCharacter();
 
-        // fixes the starting cell and the tilemap used to place the enemy in the world
-        public void Initialise(Coord cell, Tilemap tilemap)
+        // fixes the starting cell and tilemap, plus the stats the generator rolled for this enemy
+        public void Initialise(Coord cell, Tilemap tilemap, CombatStats? stats = null)
         {
             _tilemap = tilemap;
             _cell = cell;
+            if (stats.HasValue)
+                _character = new Character(stats.Value.MaxHealth, stats.Value.AttackPower);
             transform.position = CellCenter(cell);
         }
 

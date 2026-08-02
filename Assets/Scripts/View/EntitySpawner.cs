@@ -42,7 +42,7 @@ namespace ToDonegeon.View
                     _interactables[entity.Position] = interactable;
                 if (instance.TryGetComponent(out Enemy enemy))
                 {
-                    enemy.Initialise(entity.Position, _tilemap);
+                    enemy.Initialise(entity.Position, _tilemap, entity.Stats);
                     _enemies.Add(enemy);
                 }
             }

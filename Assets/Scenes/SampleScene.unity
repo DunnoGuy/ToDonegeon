@@ -16026,6 +16026,7 @@ GameObject:
   - component: {fileID: 1697926943}
   - component: {fileID: 1697926944}
   - component: {fileID: 1697926945}
+  - component: {fileID: 1697926946}
   m_Layer: 0
   m_Name: Dungeon Demo
   m_TagString: Untagged
@@ -16146,6 +16147,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dc270d5a8c106754bbe97c9dbcc2e09c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: ToDonegeon.View::ToDonegeon.View.EnemyDirector
+--- !u!114 &1697926946
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1697926939}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3911fe0f843eaf04c9f3e7bb66dd25a1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ToDonegeon.View::ToDonegeon.View.EnemyHealthOverlay
+  _spawner: {fileID: 0}
+  _camera: {fileID: 0}
+  _heightOffset: 1
 --- !u!1 &1941868603
 GameObject:
   m_ObjectHideFlags: 0
