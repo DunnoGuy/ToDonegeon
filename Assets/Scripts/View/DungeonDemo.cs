@@ -55,7 +55,7 @@ namespace ToDonegeon.View
         private const float CameraDepth = -10f;
         private const float CameraPadding = 1f;
         private const float PanelWidth = 320f;
-        private const float PanelHeight = 232f;
+        private const float PanelHeight = 256f;
         private const float PanelMargin = 10f;
         private const float GameOverWidth = 240f;
         private const float GameOverHeight = 96f;
@@ -69,6 +69,7 @@ namespace ToDonegeon.View
 
         private Dungeon _dungeon;
         private FloorPlan _floor;
+        private DungeonDifficulty _difficulty;
         private int _depth;
         private string _error;
         private int _bossCount;
@@ -154,6 +155,7 @@ namespace ToDonegeon.View
                 _dungeon = generator.Generate(_floor.Width, _floor.Height, _seed);
                 _error = null;
                 CountEntities();
+                _difficulty = DungeonDifficulty.Measure(_dungeon.Entities);
 
                 if (_renderer != null)
                 {
@@ -200,6 +202,7 @@ namespace ToDonegeon.View
                 GUILayout.Label($"Depth: {_floor.Tier}   Size: {_floor.Width} x {_floor.Height}   Rooms: {_dungeon.Rooms.Count}");
                 GridConnectivityLabel();
                 GUILayout.Label($"Boss: {_bossCount}   Chests: {_chestCount}   Enemies: {_enemyCount}");
+                GUILayout.Label($"Threat: {_difficulty.TotalThreat}   (boss {_difficulty.BossThreat})");
             }
 
             if (_error != null) GUILayout.Label("Error: " + _error);
