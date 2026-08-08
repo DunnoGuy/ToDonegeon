@@ -19,6 +19,10 @@ namespace ToDonegeon.EditorTools
         private const int Height = 48;
         private const int Bins = 10;
 
+        private const int ProgressionFirstDepth = 1;
+        private const int ProgressionLastDepth = 10;
+        private const int ProgressionSamplesPerDepth = 300;
+
         [MenuItem("Tools/ToDonegeon/Run Expressive-Range Analysis (N=1000)")]
         public static void Run()
         {
@@ -63,6 +67,19 @@ namespace ToDonegeon.EditorTools
                 ExpressiveRangeComparison.ToMarkdown(runs));
 
             Debug.Log($"[ExpressiveRange] wrote variant comparison to {directory}");
+        }
+
+        // Sweeps descent depths and writes the difficulty balance-and-progression report
+        [MenuItem("Tools/ToDonegeon/Run Difficulty Progression (depths 1-10)")]
+        public static void RunDifficultyProgression()
+        {
+            var rows = DifficultyProgression.Run(
+                ProgressionFirstDepth, ProgressionLastDepth, ProgressionSamplesPerDepth, baseSeed: 0);
+
+            string directory = ReportsDirectory();
+            File.WriteAllText(Path.Combine(directory, "difficulty_balance.md"), DifficultyProgression.ToMarkdown(rows));
+
+            Debug.Log($"[DifficultyProgression] wrote difficulty balance report to {directory}");
         }
 
         private static ExpressiveRangeReport Analyse(RoomCarverSettings carver, CorridorSettings corridor, int attempts)
