@@ -42,7 +42,7 @@ namespace ToDonegeon.Analysis
         public string ToMetricsCsv()
         {
             var sb = new StringBuilder();
-            sb.Append("seed,roomCount,roomDensity,walkableDensity,corridorShare,linearity,leniency,valid\n");
+            sb.Append("seed,roomCount,roomDensity,walkableDensity,corridorShare,linearity,difficulty,valid\n");
             foreach (DungeonMetrics m in Samples)
             {
                 sb.Append(m.Seed).Append(',')
@@ -51,7 +51,7 @@ namespace ToDonegeon.Analysis
                   .Append(F(m.WalkableDensity)).Append(',')
                   .Append(F(m.CorridorShare)).Append(',')
                   .Append(F(m.Linearity)).Append(',')
-                  .Append(F(m.Leniency)).Append(',')
+                  .Append(F(m.Difficulty)).Append(',')
                   .Append(m.IsValid ? 1 : 0).Append('\n');
             }
             return sb.ToString();
@@ -90,7 +90,7 @@ namespace ToDonegeon.Analysis
             AppendStat(sb, "walkableDensity", m => m.WalkableDensity);
             AppendStat(sb, "corridorShare", m => m.CorridorShare);
             AppendStat(sb, "linearity", m => m.Linearity);
-            AppendStat(sb, "leniency", m => m.Leniency);
+            AppendStat(sb, "difficulty", m => m.Difficulty);
             sb.Append("\nHeatmap CSV: rows = y axis (first row = highest), columns = x axis (left = lowest).\n");
             return sb.ToString();
         }

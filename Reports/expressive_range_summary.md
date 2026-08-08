@@ -13,6 +13,6 @@
 | walkableDensity | 0.404 | 0.502 | 0.627 |
 | corridorShare | 0.02 | 0.054 | 0.106 |
 | linearity | 0.304 | 0.481 | 0.636 |
-| leniency | 0.275 | 0.644 | 0.925 |
+| difficulty | 852 | 1868.556 | 3312 |
 
 Heatmap CSV: rows = y axis (first row = highest), columns = x axis (left = lowest).

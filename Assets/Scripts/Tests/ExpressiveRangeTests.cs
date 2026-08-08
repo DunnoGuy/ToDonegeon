@@ -24,7 +24,7 @@ namespace ToDonegeon.Tests
             Assert.That(a.RoomCount, Is.EqualTo(b.RoomCount));
             Assert.That(a.RoomDensity, Is.EqualTo(b.RoomDensity));
             Assert.That(a.Linearity, Is.EqualTo(b.Linearity));
-            Assert.That(a.Leniency, Is.EqualTo(b.Leniency));
+            Assert.That(a.Difficulty, Is.EqualTo(b.Difficulty));
         }
 
         [Test]
@@ -34,8 +34,9 @@ namespace ToDonegeon.Tests
 
             Assert.That(m.RoomCount, Is.GreaterThan(0));
             Assert.That(m.IsValid, Is.True);
-            foreach (float value in new[] { m.RoomDensity, m.WalkableDensity, m.CorridorShare, m.Linearity, m.Leniency })
+            foreach (float value in new[] { m.RoomDensity, m.WalkableDensity, m.CorridorShare, m.Linearity })
                 Assert.That(value, Is.InRange(0f, 1f));
+            Assert.That(m.Difficulty, Is.GreaterThan(0f), "a populated floor has threat");
             Assert.That(m.WalkableDensity, Is.GreaterThanOrEqualTo(m.RoomDensity), "walkable includes rooms + corridors");
         }
     }
