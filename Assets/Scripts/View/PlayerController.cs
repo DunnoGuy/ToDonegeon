@@ -28,6 +28,7 @@ namespace ToDonegeon.View
         private const float HudWidth = 240f;
         private const float HudHeight = 92f;
         private const float HudMargin = 10f;
+        private const float ItemRowHeight = 22f;
 
         private DungeonGrid _grid;
         private Coord _cell;
@@ -35,6 +36,7 @@ namespace ToDonegeon.View
 
         private PlayerCharacter _character;
         private string _lastMessage;
+        private int _pendingUseIndex = -1;
 
         private bool _isHopping;
         private Vector3 _hopFrom;
@@ -82,6 +84,14 @@ namespace ToDonegeon.View
 
         private void Update()
         {
+            // applied here rather than inside OnGUI
+            if (_pendingUseIndex >= 0)
+            {
+                if (_character.TryUseItem(_pendingUseIndex, out Item used))
+                    _lastMessage = $"Used {used.Name}";
+                _pendingUseIndex = -1;
+            }
+
             if (_isHopping)
             {
                 Animate();
@@ -227,13 +237,37 @@ namespace ToDonegeon.View
         {
             if (!_placed || _character == null) return;
 
-            var rect = new Rect(HudMargin, Screen.height - HudHeight - HudMargin, HudWidth, HudHeight);
+            Inventory inventory = _character.Inventory;
+            float height = HudHeight + inventory.Count * ItemRowHeight;
+            var rect = new Rect(HudMargin, Screen.height - height - HudMargin, HudWidth, height);
             ScreenGuiRegistry.Register(rect);
+
             GUILayout.BeginArea(rect, GUI.skin.box);
             GUILayout.Label($"Level {_character.Experience.Level} HP {_character.Health.Current}/{_character.Health.Max}");
             GUILayout.Label($"ATK {_character.AttackPower} Gold {_character.Gold}");
             if (!string.IsNullOrEmpty(_lastMessage)) GUILayout.Label(_lastMessage);
+            DrawInventory(inventory);
             GUILayout.EndArea();
+        }
+
+        // lists carried items
+        private void DrawInventory(Inventory inventory)
+        {
+            bool canUse = _character.IsAlive;
+            IReadOnlyList<Item> items = inventory.Items;
+            for (int i = 0; i < items.Count; i++)
+            {
+                Item item = items[i];
+                string label = $"{item.Name} (+{item.Magnitude})";
+                if (canUse)
+                {
+                    if (GUILayout.Button("Use " + label)) _pendingUseIndex = i;
+                }
+                else
+                {
+                    GUILayout.Label(label);
+                }
+            }
         }
     }
 }
