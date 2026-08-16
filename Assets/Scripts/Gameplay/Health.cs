@@ -4,7 +4,7 @@ namespace ToDonegeon.Gameplay
 {
     public sealed class Health
     {
-        public int Max { get; }
+        public int Max { get; private set; }
         public int Current { get; private set; }
 
         public Health(int max)
@@ -30,6 +30,13 @@ namespace ToDonegeon.Gameplay
             int before = Current;
             Current = Math.Min(Max, Current + amount);
             return Current - before;
+        }
+
+        public void RaiseMax(int amount)
+        {
+            if (amount <= 0) return;
+            Max += amount;
+            Current += amount;
         }
 
         public void ResetToFull() => Current = Max;

@@ -31,5 +31,17 @@ namespace ToDonegeon.Tests
         {
             Assert.Throws<System.ArgumentOutOfRangeException>(() => new Health(0));
         }
+
+        [Test]
+        public void RaiseMax_Lifts_The_Ceiling_And_Heals_By_The_Same()
+        {
+            var health = new Health(10);
+            health.TakeDamage(4); // 6 / 10
+
+            health.RaiseMax(5);
+
+            Assert.That(health.Max, Is.EqualTo(15));
+            Assert.That(health.Current, Is.EqualTo(11));
+        }
     }
 }
