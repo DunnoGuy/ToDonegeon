@@ -24,7 +24,6 @@ namespace ToDonegeon.View
         [SerializeField] private int _maxHealth = 30;
         [SerializeField] private int _attackPower = 5;
 
-        private const float CellCenterOffset = 0.5f;
         private const float HudWidth = 240f;
         private const float HudHeight = 92f;
         private const float HudMargin = 10f;
@@ -65,7 +64,7 @@ namespace ToDonegeon.View
             _lastMessage = null;
             EnsureCharacter();
             _character.Health.ResetToFull();
-            transform.position = CellCenter(startCell);
+            transform.position = TileWorld.CellCenter(_tilemap, startCell);
         }
 
         private void Awake()
@@ -152,7 +151,7 @@ namespace ToDonegeon.View
         private void CommitMove(Coord to)
         {
             _cell = to;
-            BeginHop(CellCenter(to));
+            BeginHop(TileWorld.CellCenter(_tilemap, to));
             Moved?.Invoke(_cell);
             if (_grid[to] == TileType.Exit) ReachedExit?.Invoke();
         }
@@ -223,14 +222,6 @@ namespace ToDonegeon.View
             float t = _stepDuration <= 0f ? 1f : Mathf.Clamp01(_hopElapsed / _stepDuration);
             transform.position = Vector3.Lerp(_hopFrom, _hopTo, t);
             if (t >= 1f) _isHopping = false;
-        }
-
-        private Vector3 CellCenter(Coord cell)
-        {
-            if (_tilemap != null)
-                return _tilemap.GetCellCenterWorld(new Vector3Int(cell.X, cell.Y, 0));
-
-            return new Vector3(cell.X + CellCenterOffset, cell.Y + CellCenterOffset, 0f);
         }
 
         private void OnGUI()

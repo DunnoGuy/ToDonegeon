@@ -38,13 +38,13 @@ namespace ToDonegeon.View
             _cell = cell;
             if (stats.HasValue)
                 _character = new Character(stats.Value.MaxHealth, stats.Value.AttackPower);
-            transform.position = CellCenter(cell);
+            transform.position = TileWorld.CellCenter(_tilemap, cell);
         }
 
         public void MoveTo(Coord cell)
         {
             _cell = cell;
-            transform.position = CellCenter(cell);
+            transform.position = TileWorld.CellCenter(_tilemap, cell);
         }
 
         // the enemy's own turn: a one-way hit on the player
@@ -65,13 +65,6 @@ namespace ToDonegeon.View
         {
             if (_character == null)
                 _character = new Character(Mathf.Max(1, _maxHealth), Mathf.Max(0, _attackPower));
-        }
-
-        private Vector3 CellCenter(Coord cell)
-        {
-            if (_tilemap != null)
-                return _tilemap.GetCellCenterWorld(new Vector3Int(cell.X, cell.Y, 0));
-            return new Vector3(cell.X + 0.5f, cell.Y + 0.5f, 0f);
         }
     }
 }

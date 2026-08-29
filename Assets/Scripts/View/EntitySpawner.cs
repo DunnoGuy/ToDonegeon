@@ -34,7 +34,7 @@ namespace ToDonegeon.View
                 GameObject prefab = PrefabFor(entity.Kind);
                 if (prefab == null) continue;
 
-                Vector3 world = _tilemap.GetCellCenterWorld(new Vector3Int(entity.Position.X, entity.Position.Y, 0));
+                Vector3 world = TileWorld.CellCenter(_tilemap, entity.Position);
                 GameObject instance = Instantiate(prefab, world, Quaternion.identity, _container);
                 _spawned.Add(instance);
 
