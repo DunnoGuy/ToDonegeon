@@ -9,7 +9,9 @@ namespace ToDonegeon.View
     public sealed class Enemy : MonoBehaviour, IInteractable
     {
         [Header("Character")]
+        [Tooltip("overridden by the generator's stats for spawned enemies")]
         [SerializeField] private int _maxHealth = 12;
+        [Tooltip("overridden by the generator's stats for spawned enemies")]
         [SerializeField] private int _attackPower = 3;
 
         [Header("AI")]
