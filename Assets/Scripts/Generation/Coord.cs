@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace ToDonegeon.Generation
 {
@@ -24,7 +25,7 @@ namespace ToDonegeon.Generation
 
         // the four orthogonal neighbour offsets (von Neumann neighbourhood): corridors are
         // 4-connected and the flood-fill validator expands across these offsets only.
-        public static readonly Coord[] Orthogonal = { Up, Down, Left, Right };
+        public static readonly IReadOnlyList<Coord> Orthogonal = new[] { Up, Down, Left, Right };
 
         public static Coord operator +(Coord a, Coord b) => new Coord(a.X + b.X, a.Y + b.Y);
         public static Coord operator -(Coord a, Coord b) => new Coord(a.X - b.X, a.Y - b.Y);

@@ -33,7 +33,7 @@ namespace ToDonegeon.Tests
         [Test]
         public void Orthogonal_Offsets_Are_The_Four_Neighbours()
         {
-            Assert.That(Coord.Orthogonal.Length, Is.EqualTo(4));
+            Assert.That(Coord.Orthogonal.Count, Is.EqualTo(4));
             Assert.That(Coord.Orthogonal, Does.Contain(Coord.Up));
             Assert.That(Coord.Orthogonal, Does.Contain(Coord.Down));
             Assert.That(Coord.Orthogonal, Does.Contain(Coord.Left));

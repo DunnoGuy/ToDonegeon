@@ -35,7 +35,7 @@ namespace ToDonegeon.Generation
             while (carved.Count < target && steps < maxSteps)
             {
                 steps++;
-                Coord next = pos + Coord.Orthogonal[rng.Next(Coord.Orthogonal.Length)];
+                Coord next = pos + Coord.Orthogonal[rng.Next(Coord.Orthogonal.Count)];
                 if (!region.Contains(next)) continue;
 
                 pos = next;
