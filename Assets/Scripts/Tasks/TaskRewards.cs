@@ -1,6 +1,6 @@
 namespace ToDonegeon.Tasks
 {
-    // Prototype: fixed XP per difficulty; to be reworked for the MVP.
+    // Fixed XP per task difficulty
     public static class TaskRewards
     {
         public const int TrivialXp = 5;

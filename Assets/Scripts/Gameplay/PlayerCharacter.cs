@@ -1,8 +1,6 @@
 namespace ToDonegeon.Gameplay
 {
-    // A Character controlled by the player
-    // Prototype: levelling up grants a flat +1 attack and a full heal
-    // to be reworked for the MVP.
+    // A Character controlled by the player.
     public sealed class PlayerCharacter : Character
     {
         public const int AttackPerLevel = 1;

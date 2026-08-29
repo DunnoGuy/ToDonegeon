@@ -1,8 +1,7 @@
 namespace ToDonegeon.Gameplay
 {
-    // By design, experience comes only from completing real tasks.
-    // Prototype: a flat linear curve - every XpPerLevel points is one level
-    // to be replaced with a tuned curve for the MVP.
+    // By design, experience comes only from completing real tasks, never from kills.
+    // A deliberately simple linear curve for the PoC.
     public sealed class Experience
     {
         public const int XpPerLevel = 100;

@@ -15,8 +15,7 @@ namespace ToDonegeon.Gameplay
         }
     }
 
-    // Minimal combat resolution for the prototype (flat attack values).
-    // To be reworked for the MVP.
+    // Deliberately simple combat for the PoC
     public static class Combat
     {
         public static StrikeOutcome Strike(Character attacker, Character defender)

@@ -4,7 +4,7 @@ using ToDonegeon.Gameplay;
 
 namespace ToDonegeon.View
 {
-    // Prototype task tracker
+    // In-scene task tracker. Completing a task grants the player XP for its difficulty.
     public sealed class TaskPanel : MonoBehaviour
     {
         [SerializeField] private PlayerController _player;
