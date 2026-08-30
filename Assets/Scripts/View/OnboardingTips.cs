@@ -37,11 +37,16 @@ namespace ToDonegeon.View
         private const string MoveTip = "Move with WASD or click. Find a pink tile to advance";
         private const string CombatTip = "Bump into an enemy to attack. Be careful, they can attack back!";
         private const string ItemTip = "Use looted items from the panel (bottom-left)";
+        private const string TaskTip = "Tick off real to-dos in the Tasks panel (right) to earn XP";
+        private const string XpTip = "Harder tasks give more XP; level-ups boost attack and heal";
 
         private bool _onFirstFloor;
         private bool _moveTipDone;
         private bool _combatTipDone;
         private bool _itemTipDone;
+        private bool _taskTipDone;
+        private bool _xpTipDone;
+        private int _xpAtFloorStart;
 
         private string _currentTip;
         private float _tipExpiry;
@@ -68,7 +73,8 @@ namespace ToDonegeon.View
         private void OnFloorGenerated(int depth)
         {
             _onFirstFloor = depth <= FirstFloorDepth;
-            _moveTipDone = _combatTipDone = _itemTipDone = false;
+            _moveTipDone = _combatTipDone = _itemTipDone = _taskTipDone = _xpTipDone = false;
+            _xpAtFloorStart = CurrentExperience();
             _currentTip = null;
 
             if (_onFirstFloor) Show(MoveTip, ref _moveTipDone);
@@ -81,7 +87,9 @@ namespace ToDonegeon.View
             if (_currentTip != null && Time.time >= _tipExpiry) _currentTip = null;
 
             if (!_combatTipDone && EnemyNearby()) Show(CombatTip, ref _combatTipDone);
+            else if (!_xpTipDone && GainedExperience()) Show(XpTip, ref _xpTipDone);
             else if (!_itemTipDone && PlayerHasItem()) Show(ItemTip, ref _itemTipDone);
+            else if (!_taskTipDone && _moveTipDone && _currentTip == null) Show(TaskTip, ref _taskTipDone);
         }
 
         private bool EnemyNearby()
@@ -101,6 +109,11 @@ namespace ToDonegeon.View
 
         private bool PlayerHasItem()
             => _player != null && _player.Character != null && _player.Character.Inventory.Count > 0;
+
+        private bool GainedExperience() => CurrentExperience() > _xpAtFloorStart;
+
+        private int CurrentExperience()
+            => _player != null && _player.Character != null ? _player.Character.Experience.Total : 0;
 
         private void Show(string tip, ref bool done)
         {
