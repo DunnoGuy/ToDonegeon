@@ -19,9 +19,9 @@ namespace ToDonegeon.Gameplay
 
             switch (PickKind(rng))
             {
-                case ItemKind.Weapon: return new Item("Blade", ItemKind.Weapon, Between(rng, WeaponMin, WeaponMax));
-                case ItemKind.Charm: return new Item("Vitality charm", ItemKind.Charm, Between(rng, CharmMin, CharmMax));
-                default: return new Item("Healing potion", ItemKind.Potion, Between(rng, PotionMin, PotionMax));
+                case ItemKind.Weapon: return new Item("Blade (increases attack)", ItemKind.Weapon, Between(rng, WeaponMin, WeaponMax));
+                case ItemKind.Charm: return new Item("Vitality charm (increases health)", ItemKind.Charm, Between(rng, CharmMin, CharmMax));
+                default: return new Item("Healing potion (restores health)", ItemKind.Potion, Between(rng, PotionMin, PotionMax));
             }
         }
 

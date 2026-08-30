@@ -23,7 +23,7 @@ namespace ToDonegeon.View
 
         private const int FirstFloorDepth = 1;
         private const float TipWidth = 380f;
-        private const float TipHeight = 40f;
+        private const float TipHeight = 55f;
         private const float TopMargin = 12f;
         private const float SideMargin = 8f;
         private const float HeadWorldOffset = 0.8f;
@@ -35,7 +35,7 @@ namespace ToDonegeon.View
         private static readonly Color TextColor = new Color(0.08f, 0.05f, 0.02f, 1f);
 
         private const string MoveTip = "Move with WASD or click. Find a pink tile to advance";
-        private const string CombatTip = "Bump into an enemy to attack. Be careful, they can attack back!";
+        private const string CombatTip = "You can bump into an enemy to attack, but they will fight back! Only fight when it's unavoidable";
         private const string ItemTip = "Use looted items from the panel (bottom-left)";
         private const string TaskTip = "Tick off real to-dos in the Tasks panel (right) to earn XP";
         private const string XpTip = "Harder tasks give more XP; level-ups boost attack and heal";
