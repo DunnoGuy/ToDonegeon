@@ -16,6 +16,9 @@ namespace ToDonegeon.View
         [SerializeField] private float _tipDuration = 5f;
         [Tooltip("An enemy within this many tiles triggers the combat tip")]
         [SerializeField] private int _enemyTipRange = 6;
+        [Range(0f, 1f)]
+        [Tooltip("Health fraction at or below which the low-health tip appears")]
+        [SerializeField] private float _lowHealthFraction = 0.3f;
         [SerializeField] private Camera _camera;
         [Range(0f, 1f)]
         [Tooltip("Where the tip sits above the character: 0 hugs the character, 1 climbs to the top edge")]
@@ -39,6 +42,7 @@ namespace ToDonegeon.View
         private const string ItemTip = "Use looted items from the panel (bottom-left)";
         private const string TaskTip = "Tick off real to-dos in the Tasks panel (right) to earn XP";
         private const string XpTip = "Harder tasks give more XP; level-ups boost attack and heal";
+        private const string LowHealthTip = "Low HP! Complete tasks (top-right) to level up and heal";
 
         private bool _onFirstFloor;
         private bool _moveTipDone;
@@ -46,6 +50,7 @@ namespace ToDonegeon.View
         private bool _itemTipDone;
         private bool _taskTipDone;
         private bool _xpTipDone;
+        private bool _lowHealthTipDone;
         private int _xpAtFloorStart;
 
         private string _currentTip;
@@ -73,7 +78,7 @@ namespace ToDonegeon.View
         private void OnFloorGenerated(int depth)
         {
             _onFirstFloor = depth <= FirstFloorDepth;
-            _moveTipDone = _combatTipDone = _itemTipDone = _taskTipDone = _xpTipDone = false;
+            _moveTipDone = _combatTipDone = _itemTipDone = _taskTipDone = _xpTipDone = _lowHealthTipDone = false;
             _xpAtFloorStart = CurrentExperience();
             _currentTip = null;
 
@@ -82,9 +87,16 @@ namespace ToDonegeon.View
 
         private void Update()
         {
-            if (!_onFirstFloor) return;
-
             if (_currentTip != null && Time.time >= _tipExpiry) _currentTip = null;
+
+            // the low-health warning is useful on every floor, not just the first
+            if (!_lowHealthTipDone && HealthIsLow())
+            {
+                Show(LowHealthTip, ref _lowHealthTipDone);
+                return;
+            }
+
+            if (!_onFirstFloor) return;
 
             if (!_combatTipDone && EnemyNearby()) Show(CombatTip, ref _combatTipDone);
             else if (!_xpTipDone && GainedExperience()) Show(XpTip, ref _xpTipDone);
@@ -109,6 +121,15 @@ namespace ToDonegeon.View
 
         private bool PlayerHasItem()
             => _player != null && _player.Character != null && _player.Character.Inventory.Count > 0;
+
+        private bool HealthIsLow()
+        {
+            var character = _player != null ? _player.Character : null;
+            if (character == null || !character.IsAlive) return false;
+
+            int max = character.Health.Max;
+            return max > 0 && (float)character.Health.Current / max <= _lowHealthFraction;
+        }
 
         private bool GainedExperience() => CurrentExperience() > _xpAtFloorStart;
 
