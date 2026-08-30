@@ -17,6 +17,7 @@ namespace ToDonegeon.View
         private const float RewardWidth = 44f;
         private const float RemoveWidth = 24f;
         private const float ReorderWidth = 22f;
+        private const float DockButtonWidth = 70f;
 
         private static readonly string[] DifficultyNames = System.Enum.GetNames(typeof(TaskDifficulty));
 
@@ -47,7 +48,16 @@ namespace ToDonegeon.View
             ScreenGuiRegistry.Register(area);
             GUILayout.BeginArea(area, GUI.skin.box);
 
+            GUILayout.BeginHorizontal();
             GUILayout.Label("TASKS");
+            if (WindowDock.IsSupported)
+            {
+                GUILayout.FlexibleSpace();
+                if (GUILayout.Button(WindowDock.IsDocked ? "Undock" : "Dock", GUILayout.Width(DockButtonWidth)))
+                    WindowDock.Toggle();
+            }
+            GUILayout.EndHorizontal();
+
             DrawProgress();
             GUILayout.Space(RowSpacing);
 
