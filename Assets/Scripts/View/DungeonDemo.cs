@@ -67,6 +67,9 @@ namespace ToDonegeon.View
 
         private static readonly System.Random SeedSource = new System.Random();
 
+        // raised after a floor is generated, carrying its depth
+        public event System.Action<int> FloorGenerated;
+
         private Dungeon _dungeon;
         private FloorPlan _floor;
         private DungeonDifficulty _difficulty;
@@ -170,6 +173,8 @@ namespace ToDonegeon.View
 
                 Debug.Log($"[DungeonDemo] depth={_floor.Tier} seed={_dungeon.Seed} shape={SpaceType()} rooms={_dungeon.Rooms.Count} " +
                     $"valid={_dungeon.IsValid} attempts={_dungeon.Attempts} entities={_dungeon.Entities.Count}");
+
+                FloorGenerated?.Invoke(_floor.Tier);
             }
             catch (System.Exception ex)
             {
