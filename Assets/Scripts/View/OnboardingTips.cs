@@ -16,11 +16,23 @@ namespace ToDonegeon.View
         [SerializeField] private float _tipDuration = 5f;
         [Tooltip("An enemy within this many tiles triggers the combat tip")]
         [SerializeField] private int _enemyTipRange = 6;
+        [SerializeField] private Camera _camera;
+        [Range(0f, 1f)]
+        [Tooltip("Where the tip sits above the character: 0 hugs the character, 1 climbs to the top edge")]
+        [SerializeField] private float _heightBias = 0.5f;
 
         private const int FirstFloorDepth = 1;
-        private const float TipWidth = 340f;
-        private const float TipHeight = 28f;
-        private const float TopMargin = 8f;
+        private const float TipWidth = 380f;
+        private const float TipHeight = 40f;
+        private const float TopMargin = 12f;
+        private const float SideMargin = 8f;
+        private const float HeadWorldOffset = 0.8f;
+        private const float BorderThickness = 2f;
+        private const int TipFontSize = 15;
+
+        private static readonly Color BorderColor = new Color(0.05f, 0.05f, 0.08f, 1f);
+        private static readonly Color FillColor = new Color(0.98f, 0.62f, 0.09f, 1f);
+        private static readonly Color TextColor = new Color(0.08f, 0.05f, 0.02f, 1f);
 
         private const string MoveTip = "Move with WASD or click. Find a pink tile to advance";
         private const string CombatTip = "Bump into an enemy to attack. Be careful, they can attack back!";
@@ -40,6 +52,7 @@ namespace ToDonegeon.View
             if (_demo == null) _demo = FindAnyObjectByType<DungeonDemo>();
             if (_player == null) _player = FindAnyObjectByType<PlayerController>();
             if (_spawner == null) _spawner = FindAnyObjectByType<EntitySpawner>();
+            if (_camera == null) _camera = Camera.main;
         }
 
         private void OnEnable()
@@ -100,9 +113,52 @@ namespace ToDonegeon.View
         {
             if (_currentTip == null) return;
 
-            _style ??= new GUIStyle(GUI.skin.box) { alignment = TextAnchor.MiddleCenter, wordWrap = true };
-            float x = (Screen.width - TipWidth) * 0.5f;
-            GUI.Box(new Rect(x, TopMargin, TipWidth, TipHeight), _currentTip, _style);
+            _style ??= new GUIStyle(GUI.skin.label)
+            {
+                alignment = TextAnchor.MiddleCenter,
+                fontStyle = FontStyle.Bold,
+                fontSize = TipFontSize,
+                wordWrap = true
+            };
+            _style.normal.textColor = TextColor;
+
+            Rect outer = TipRect();
+            var inner = new Rect(
+                outer.x + BorderThickness, outer.y + BorderThickness,
+                outer.width - BorderThickness * 2f, outer.height - BorderThickness * 2f);
+
+            Color previous = GUI.color;
+            GUI.color = BorderColor;
+            GUI.DrawTexture(outer, Texture2D.whiteTexture);
+            GUI.color = FillColor;
+            GUI.DrawTexture(inner, Texture2D.whiteTexture);
+            GUI.color = previous;
+
+            GUI.Label(outer, _currentTip, _style);
+        }
+
+        // Floats the tip above the character, in the gap between it and the top edge; falls back to
+        // top-centre when the camera or player is unavailable.
+        private Rect TipRect()
+        {
+            float left = (Screen.width - TipWidth) * 0.5f;
+            float top = TopMargin;
+
+            if (_camera == null) _camera = Camera.main;
+            if (_camera != null && _player != null)
+            {
+                Vector3 screen = _camera.WorldToScreenPoint(_player.transform.position + Vector3.up * HeadWorldOffset);
+                if (screen.z > 0f)
+                {
+                    float headGuiY = Screen.height - screen.y;
+                    left = screen.x - TipWidth * 0.5f;
+                    top = Mathf.Lerp(headGuiY - TipHeight, TopMargin, _heightBias);
+                }
+            }
+
+            left = Mathf.Clamp(left, SideMargin, Screen.width - TipWidth - SideMargin);
+            top = Mathf.Clamp(top, TopMargin, Screen.height - TipHeight);
+            return new Rect(left, top, TipWidth, TipHeight);
         }
     }
 }
