@@ -16,12 +16,17 @@ namespace ToDonegeon.Gameplay
 
         public bool IsDead => Current <= 0;
 
+        // raised with the amount actually lost whenever damage is taken
+        public event Action<int> Damaged;
+
         public int TakeDamage(int amount)
         {
             if (amount <= 0) return 0;
             int before = Current;
             Current = Math.Max(0, Current - amount);
-            return before - Current;
+            int dealt = before - Current;
+            if (dealt > 0) Damaged?.Invoke(dealt);
+            return dealt;
         }
 
         public int Heal(int amount)

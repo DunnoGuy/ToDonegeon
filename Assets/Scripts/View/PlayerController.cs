@@ -28,6 +28,11 @@ namespace ToDonegeon.View
         private const float HudHeight = 92f;
         private const float HudMargin = 10f;
         private const float ItemRowHeight = 22f;
+        private const float FlashDuration = 0.35f;
+        private const float ShakeDuration = 0.28f;
+        private const float ShakeMagnitude = 0.14f;
+
+        private static readonly Color DamageFlashColor = new Color(1f, 0.3f, 0.3f, 1f);
 
         private DungeonGrid _grid;
         private Coord _cell;
@@ -41,6 +46,12 @@ namespace ToDonegeon.View
         private Vector3 _hopFrom;
         private Vector3 _hopTo;
         private float _hopElapsed;
+
+        private SpriteRenderer _sprite;
+        private Color _baseColor = Color.white;
+        private Vector3 _visualBase; // position before the damage shake offset
+        private float _shakeElapsed = ShakeDuration;
+        private float _flashElapsed = FlashDuration;
 
         private Queue<Coord> _path; // pending click-to-move route, walked one cell per turn
 
@@ -64,13 +75,16 @@ namespace ToDonegeon.View
             _lastMessage = null;
             EnsureCharacter();
             _character.Health.ResetToFull();
-            transform.position = TileWorld.CellCenter(_tilemap, startCell);
+            _visualBase = TileWorld.CellCenter(_tilemap, startCell);
+            transform.position = _visualBase;
         }
 
         private void Awake()
         {
             if (_camera == null) _camera = Camera.main;
             if (_entitySpawner == null) _entitySpawner = FindAnyObjectByType<EntitySpawner>();
+            _sprite = GetComponentInChildren<SpriteRenderer>();
+            if (_sprite != null) _baseColor = _sprite.color;
             EnsureCharacter();
         }
 
@@ -78,7 +92,10 @@ namespace ToDonegeon.View
         private void EnsureCharacter()
         {
             if (_character == null)
+            {
                 _character = new PlayerCharacter(Mathf.Max(1, _maxHealth), Mathf.Max(0, _attackPower));
+                _character.Health.Damaged += OnDamaged;
+            }
         }
 
         private void Update()
@@ -161,7 +178,7 @@ namespace ToDonegeon.View
         // An attack or loot still costs a turn
         private void ConsumeTurnInPlace()
         {
-            BeginHop(transform.position);
+            BeginHop(_visualBase);
             Moved?.Invoke(_cell);
         }
 
@@ -212,7 +229,7 @@ namespace ToDonegeon.View
 
         private void BeginHop(Vector3 target)
         {
-            _hopFrom = transform.position;
+            _hopFrom = _visualBase;
             _hopTo = target;
             _hopElapsed = 0f;
             _isHopping = true;
@@ -222,8 +239,49 @@ namespace ToDonegeon.View
         {
             _hopElapsed += Time.deltaTime;
             float t = _stepDuration <= 0f ? 1f : Mathf.Clamp01(_hopElapsed / _stepDuration);
-            transform.position = Vector3.Lerp(_hopFrom, _hopTo, t);
+            _visualBase = Vector3.Lerp(_hopFrom, _hopTo, t);
+            ApplyVisual();
             if (t >= 1f) _isHopping = false;
+        }
+
+        private void LateUpdate()
+        {
+            UpdateShake();
+            UpdateFlash();
+        }
+
+        // flashes the sprite and shakes the character briefly when the player loses health
+        private void OnDamaged(int amount)
+        {
+            _shakeElapsed = 0f;
+            _flashElapsed = 0f;
+        }
+
+        private void UpdateShake()
+        {
+            if (_shakeElapsed >= ShakeDuration) return;
+
+            _shakeElapsed += Time.deltaTime;
+            ApplyVisual();
+            if (_shakeElapsed >= ShakeDuration) transform.position = _visualBase; // settle back
+        }
+
+        private void ApplyVisual() => transform.position = _visualBase + ShakeOffset();
+
+        private Vector3 ShakeOffset()
+        {
+            if (_shakeElapsed >= ShakeDuration) return Vector3.zero;
+            float magnitude = ShakeMagnitude * (1f - _shakeElapsed / ShakeDuration);
+            return new Vector3(Random.Range(-magnitude, magnitude), Random.Range(-magnitude, magnitude), 0f);
+        }
+
+        private void UpdateFlash()
+        {
+            if (_sprite == null || _flashElapsed >= FlashDuration) return;
+
+            _flashElapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(_flashElapsed / FlashDuration);
+            _sprite.color = Color.Lerp(DamageFlashColor, _baseColor, t);
         }
 
         private void OnGUI()
