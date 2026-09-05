@@ -38,9 +38,11 @@ namespace ToDonegeon.View
         private const float NumberWidth = 100f;
         private const float NumberHeight = 40f;
         private const int NumberFontSize = 40;
+        private const float LowHpFraction = 0.3f;
 
         private static readonly Color DamageFlashColor = new Color(1f, 0.3f, 0.3f, 1f);
         private static readonly Color DamageNumberColor = new Color(1f, 0.3f, 0.3f, 1f);
+        private static readonly Color LowHpColor = new Color(0.9f, 0.2f, 0.2f, 1f);
 
         private DungeonGrid _grid;
         private Coord _cell;
@@ -63,6 +65,8 @@ namespace ToDonegeon.View
 
         private readonly List<DamageNumber> _damageNumbers = new List<DamageNumber>();
         private GUIStyle _damageStyle;
+        private GUIStyle _hpStyle;
+        private Color _defaultLabelColor;
 
         private Queue<Coord> _path; // pending click-to-move route, walked one cell per turn
 
@@ -324,7 +328,7 @@ namespace ToDonegeon.View
             ScreenGuiRegistry.Register(rect);
 
             GUILayout.BeginArea(rect, GUI.skin.box);
-            GUILayout.Label($"Level {_character.Experience.Level} HP {_character.Health.Current}/{_character.Health.Max}");
+            DrawHealthLine();
             GUILayout.Label($"ATK {_character.AttackPower} Gold {_character.Gold}");
             if (!string.IsNullOrEmpty(_lastMessage)) GUILayout.Label(_lastMessage);
             DrawInventory(inventory);
@@ -332,6 +336,26 @@ namespace ToDonegeon.View
 
             // drawn outside the area so the numbers can rise out past the panel's top edge
             DrawDamageNumbers(rect.y);
+        }
+
+        // "Level N" plus a bold HP readout that turns red at low health
+        private void DrawHealthLine()
+        {
+            if (_hpStyle == null)
+            {
+                _hpStyle = new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Bold };
+                _defaultLabelColor = GUI.skin.label.normal.textColor;
+            }
+
+            Health health = _character.Health;
+            bool lowHp = health.Max > 0 && (float)health.Current / health.Max < LowHpFraction;
+            _hpStyle.normal.textColor = lowHp ? LowHpColor : _defaultLabelColor;
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Label($"Level {_character.Experience.Level}");
+            GUILayout.Label($"HP {health.Current}/{health.Max}", _hpStyle);
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
         }
 
         // floating "-N" numbers that rise out of the HUD's HP line and fade
