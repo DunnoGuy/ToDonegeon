@@ -81,6 +81,8 @@ namespace ToDonegeon.View
 
         private void Start()
         {
+            WindowDock.NormalizeSize(); // recover a normal window if a prior run left it docked-sized
+
             if (_renderer == null) _renderer = GetComponentInChildren<DungeonRenderer>();
             if (_entitySpawner == null) _entitySpawner = GetComponentInChildren<EntitySpawner>();
             if (_enemyDirector == null) _enemyDirector = FindAnyObjectByType<EnemyDirector>();
@@ -198,6 +200,8 @@ namespace ToDonegeon.View
 
         private void OnGUI()
         {
+            if (WindowDock.IsDocked) return; // only the task list shows while docked
+
             GUILayout.BeginArea(new Rect(PanelMargin, PanelMargin, PanelWidth, PanelHeight), GUI.skin.box);
 
             if (_dungeon != null)

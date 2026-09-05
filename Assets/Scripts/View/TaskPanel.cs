@@ -19,6 +19,8 @@ namespace ToDonegeon.View
         private const float ReorderWidth = 22f;
         private const float DockButtonWidth = 70f;
 
+        private static readonly Color DockBackground = new Color(0.12f, 0.12f, 0.14f, 1f);
+
         private static readonly string[] DifficultyNames = System.Enum.GetNames(typeof(TaskDifficulty));
 
         private readonly TaskList _tasks = new TaskList();
@@ -43,9 +45,21 @@ namespace ToDonegeon.View
 
         private void OnGUI()
         {
-            float x = Screen.width - PanelWidth - PanelMargin;
-            var area = new Rect(x, PanelMargin, PanelWidth, Screen.height - 2f * PanelMargin);
+            bool docked = WindowDock.IsDocked;
+            Rect area = docked
+                ? new Rect(0f, 0f, Screen.width, Screen.height)
+                : new Rect(Screen.width - PanelWidth - PanelMargin, PanelMargin, PanelWidth, Screen.height - 2f * PanelMargin);
             ScreenGuiRegistry.Register(area);
+
+            // an opaque fill covers the game so only the task list shows in the docked strip
+            if (docked)
+            {
+                Color previous = GUI.color;
+                GUI.color = DockBackground;
+                GUI.DrawTexture(area, Texture2D.whiteTexture);
+                GUI.color = previous;
+            }
+
             GUILayout.BeginArea(area, GUI.skin.box);
 
             GUILayout.BeginHorizontal();

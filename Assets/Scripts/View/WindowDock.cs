@@ -5,7 +5,10 @@ using UnityEngine;
 namespace ToDonegeon.View
 {
     // Docks the standalone window to a screen edge as an always-on-top strip, so the task list can sit
-    // over other applications while they stay interactive
+    // over other applications while they stay interactive. Undocking returns the game to fullscreen.
+    // Unity owns the window size (Screen.SetResolution); the native calls set position and topmost, and
+    // are re-applied for a few frames because a resolution change only lands at the end of the frame.
+    // Windows standalone only; a no-op in the editor and on other platforms.
     public static class WindowDock
     {
         public static bool IsSupported => Application.platform == RuntimePlatform.WindowsPlayer;
@@ -14,8 +17,15 @@ namespace ToDonegeon.View
         public const int DefaultDockWidth = 340;
 
         private static IntPtr _window;
-        private static Rect2D _restoreRect;
-        private static bool _hasRestoreRect;
+
+        private static int _pendingFrames;
+        private static int _targetX;
+        private static int _targetY;
+        private static int _targetWidth;
+        private static int _targetHeight;
+        private static IntPtr _targetOrder;
+        private static uint _targetFlags;
+        private const int ReassertFrames = 10;
 
         public static void Toggle(int width = DefaultDockWidth)
         {
@@ -25,44 +35,57 @@ namespace ToDonegeon.View
 
         public static void Dock(int width = DefaultDockWidth)
         {
-            if (!IsSupported) return;
-            IntPtr window = Window();
-            if (window == IntPtr.Zero) return;
-
-            if (!IsDocked && GetWindowRect(window, out Rect2D current))
-            {
-                _restoreRect = current;
-                _hasRestoreRect = true;
-            }
-
-            // a floating window is required for SetWindowPos to place the strip
-            Screen.fullScreenMode = FullScreenMode.Windowed;
+            if (!IsSupported || Window() == IntPtr.Zero) return;
 
             Rect2D work = WorkArea();
             int height = work.bottom - work.top;
-            int left = work.right - width;
-            SetWindowPos(window, HwndTopmost, left, work.top, width, height, SwpNoActivate | SwpShowWindow);
+            Screen.SetResolution(width, height, FullScreenMode.Windowed);
+            SchedulePlacement(work.right - width, work.top, width, height, HwndTopmost, SwpNoActivate | SwpShowWindow);
             IsDocked = true;
         }
 
         public static void Undock()
         {
             if (!IsSupported) return;
-            IntPtr window = Window();
-            if (window == IntPtr.Zero) return;
 
-            if (_hasRestoreRect)
-            {
-                int width = _restoreRect.right - _restoreRect.left;
-                int height = _restoreRect.bottom - _restoreRect.top;
-                SetWindowPos(window, HwndNoTopmost, _restoreRect.left, _restoreRect.top, width, height,
-                    SwpNoActivate | SwpShowWindow);
-            }
-            else
-            {
-                SetWindowPos(window, HwndNoTopmost, 0, 0, 0, 0, SwpNoActivate | SwpNoMove | SwpNoSize);
-            }
             IsDocked = false;
+            GoFullscreen();
+            SchedulePlacement(0, 0, 0, 0, HwndNoTopmost, SwpNoMove | SwpNoSize | SwpNoActivate);
+        }
+
+        // Called at startup to restore fullscreen when we are not docked but stuck at the dock width.
+        public static void NormalizeSize()
+        {
+            if (!IsSupported || IsDocked) return;
+            if (Screen.width <= DefaultDockWidth) GoFullscreen();
+        }
+
+        private static void GoFullscreen()
+        {
+            Screen.SetResolution(Display.main.systemWidth, Display.main.systemHeight, FullScreenMode.FullScreenWindow);
+        }
+
+        private static void SchedulePlacement(int x, int y, int width, int height, IntPtr order, uint flags)
+        {
+            _targetX = x;
+            _targetY = y;
+            _targetWidth = width;
+            _targetHeight = height;
+            _targetOrder = order;
+            _targetFlags = flags;
+            _pendingFrames = ReassertFrames;
+            DockRunner.Ensure();
+        }
+
+        // re-applies position, size, and topmost while the resolution change settles over the next frames
+        internal static void ApplyPendingPlacement()
+        {
+            if (_pendingFrames <= 0) return;
+            _pendingFrames--;
+
+            IntPtr window = Window();
+            if (window != IntPtr.Zero)
+                SetWindowPos(window, _targetOrder, _targetX, _targetY, _targetWidth, _targetHeight, _targetFlags);
         }
 
         // captured once while the window is active (the click that docks it), then reused
@@ -108,9 +131,6 @@ namespace ToDonegeon.View
 
         [DllImport("user32.dll")]
         private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, uint flags);
-
-        [DllImport("user32.dll")]
-        private static extern bool GetWindowRect(IntPtr hWnd, out Rect2D rect);
 
         [DllImport("user32.dll")]
         private static extern bool SystemParametersInfo(uint action, uint param, ref Rect2D value, uint winIni);

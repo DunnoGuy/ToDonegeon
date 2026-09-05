@@ -28,6 +28,7 @@ namespace ToDonegeon.View
 
         private void OnGUI()
         {
+            if (WindowDock.IsDocked) return; // only the task list shows while docked
             if (_spawner == null) return;
             if (_camera == null) _camera = Camera.main;
             if (_camera == null) return;

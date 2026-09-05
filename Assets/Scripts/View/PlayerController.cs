@@ -83,6 +83,8 @@ namespace ToDonegeon.View
 
         private void Update()
         {
+            if (WindowDock.IsDocked) return; // paused while docked as a task widget
+
             // applied here rather than inside OnGUI
             if (_pendingUseIndex >= 0)
             {
@@ -226,6 +228,7 @@ namespace ToDonegeon.View
 
         private void OnGUI()
         {
+            if (WindowDock.IsDocked) return; // only the task list shows while docked
             if (!_placed || _character == null) return;
 
             Inventory inventory = _character.Inventory;

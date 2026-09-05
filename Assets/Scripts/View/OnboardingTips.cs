@@ -145,6 +145,7 @@ namespace ToDonegeon.View
 
         private void OnGUI()
         {
+            if (WindowDock.IsDocked) return; // only the task list shows while docked
             if (_currentTip == null) return;
 
             _style ??= new GUIStyle(GUI.skin.label)
