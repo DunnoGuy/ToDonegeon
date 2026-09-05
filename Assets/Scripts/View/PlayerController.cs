@@ -31,8 +31,16 @@ namespace ToDonegeon.View
         private const float FlashDuration = 0.35f;
         private const float ShakeDuration = 0.28f;
         private const float ShakeMagnitude = 0.14f;
+        private const float NumberDuration = 0.9f;
+        private const float NumberRise = 100f;
+        private const float NumberJitter = 22f;
+        private const float NumberAnchorX = 52f;
+        private const float NumberWidth = 100f;
+        private const float NumberHeight = 40f;
+        private const int NumberFontSize = 40;
 
         private static readonly Color DamageFlashColor = new Color(1f, 0.3f, 0.3f, 1f);
+        private static readonly Color DamageNumberColor = new Color(1f, 0.3f, 0.3f, 1f);
 
         private DungeonGrid _grid;
         private Coord _cell;
@@ -52,6 +60,9 @@ namespace ToDonegeon.View
         private Vector3 _visualBase; // position before the damage shake offset
         private float _shakeElapsed = ShakeDuration;
         private float _flashElapsed = FlashDuration;
+
+        private readonly List<DamageNumber> _damageNumbers = new List<DamageNumber>();
+        private GUIStyle _damageStyle;
 
         private Queue<Coord> _path; // pending click-to-move route, walked one cell per turn
 
@@ -248,13 +259,31 @@ namespace ToDonegeon.View
         {
             UpdateShake();
             UpdateFlash();
+            UpdateDamageNumbers();
         }
 
-        // flashes the sprite and shakes the character briefly when the player loses health
+        // flashes the sprite, shakes the character, and floats the amount lost out of the HUD
         private void OnDamaged(int amount)
         {
             _shakeElapsed = 0f;
             _flashElapsed = 0f;
+            _damageNumbers.Add(new DamageNumber
+            {
+                Amount = amount,
+                Elapsed = 0f,
+                OffsetX = Random.Range(-NumberJitter, NumberJitter)
+            });
+        }
+
+        private void UpdateDamageNumbers()
+        {
+            for (int i = _damageNumbers.Count - 1; i >= 0; i--)
+            {
+                DamageNumber number = _damageNumbers[i];
+                number.Elapsed += Time.deltaTime;
+                if (number.Elapsed >= NumberDuration) _damageNumbers.RemoveAt(i);
+                else _damageNumbers[i] = number;
+            }
         }
 
         private void UpdateShake()
@@ -300,6 +329,41 @@ namespace ToDonegeon.View
             if (!string.IsNullOrEmpty(_lastMessage)) GUILayout.Label(_lastMessage);
             DrawInventory(inventory);
             GUILayout.EndArea();
+
+            // drawn outside the area so the numbers can rise out past the panel's top edge
+            DrawDamageNumbers(rect.y);
+        }
+
+        // floating "-N" numbers that rise out of the HUD's HP line and fade
+        private void DrawDamageNumbers(float panelTop)
+        {
+            if (_damageNumbers.Count == 0) return;
+
+            _damageStyle ??= new GUIStyle(GUI.skin.label)
+            {
+                alignment = TextAnchor.MiddleCenter,
+                fontStyle = FontStyle.Bold,
+                fontSize = NumberFontSize
+            };
+
+            Color previous = GUI.color;
+            for (int i = 0; i < _damageNumbers.Count; i++)
+            {
+                DamageNumber number = _damageNumbers[i];
+                float t = number.Elapsed / NumberDuration;
+                float x = HudMargin + NumberAnchorX + number.OffsetX;
+                float y = panelTop - NumberRise * t;
+                GUI.color = new Color(DamageNumberColor.r, DamageNumberColor.g, DamageNumberColor.b, 1f - t);
+                GUI.Label(new Rect(x, y, NumberWidth, NumberHeight), $"-{number.Amount}", _damageStyle);
+            }
+            GUI.color = previous;
+        }
+
+        private struct DamageNumber
+        {
+            public int Amount;
+            public float Elapsed;
+            public float OffsetX;
         }
 
         // lists carried items
