@@ -40,7 +40,7 @@ namespace ToDonegeon.View
         private const string MoveTip = "Move with WASD or click. Find a pink tile to advance";
         private const string CombatTip = "You can bump into an enemy to attack, but they will fight back! Only fight when it's unavoidable";
         private const string ItemTip = "Use looted items from the panel (bottom-left)";
-        private const string TaskTip = "Tick off real to-dos in the Tasks panel (right) to earn XP";
+        private const string TaskTip = "Tick off real to-dos in the Tasks panel (on the right side) to earn XP";
         private const string XpTip = "Harder tasks give more XP; level-ups boost attack and heal";
         private const string LowHealthTip = "Low HP! Complete tasks (top-right) to level up and heal";
 
@@ -87,6 +87,13 @@ namespace ToDonegeon.View
 
         private void Update()
         {
+            // hold the current tip until the start menu closes
+            if (MainMenu.IsOpen)
+            {
+                _tipExpiry = Time.time + _tipDuration;
+                return;
+            }
+
             if (_currentTip != null && Time.time >= _tipExpiry) _currentTip = null;
 
             // the low-health warning is useful on every floor, not just the first
@@ -145,6 +152,7 @@ namespace ToDonegeon.View
 
         private void OnGUI()
         {
+            if (MainMenu.IsOpen) return; // hidden behind the start menu
             if (WindowDock.IsDocked) return; // only the task list shows while docked
             if (_currentTip == null) return;
 

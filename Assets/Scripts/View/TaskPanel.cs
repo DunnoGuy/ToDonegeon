@@ -45,6 +45,8 @@ namespace ToDonegeon.View
 
         private void OnGUI()
         {
+            if (MainMenu.IsOpen) return; // hidden behind the start menu
+
             bool docked = WindowDock.IsDocked;
             Rect area = docked
                 ? new Rect(0f, 0f, Screen.width, Screen.height)

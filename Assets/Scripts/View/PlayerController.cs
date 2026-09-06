@@ -115,6 +115,7 @@ namespace ToDonegeon.View
 
         private void Update()
         {
+            if (MainMenu.IsOpen) return; // paused behind the start menu
             if (WindowDock.IsDocked) return; // paused while docked as a task widget
 
             // applied here rather than inside OnGUI
@@ -319,6 +320,7 @@ namespace ToDonegeon.View
 
         private void OnGUI()
         {
+            if (MainMenu.IsOpen) return; // hidden behind the start menu
             if (WindowDock.IsDocked) return; // only the task list shows while docked
             if (!_placed || _character == null) return;
 

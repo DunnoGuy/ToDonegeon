@@ -105,6 +105,8 @@ namespace ToDonegeon.View
 
         private void Update()
         {
+            if (MainMenu.IsOpen) return; // paused behind the start menu
+
             Keyboard keyboard = Keyboard.current;
             if (keyboard != null && keyboard[_regenerateKey].wasPressedThisFrame)
             {
@@ -200,6 +202,7 @@ namespace ToDonegeon.View
 
         private void OnGUI()
         {
+            if (MainMenu.IsOpen) return; // hidden behind the start menu
             if (WindowDock.IsDocked) return; // only the task list shows while docked
 
             GUILayout.BeginArea(new Rect(PanelMargin, PanelMargin, PanelWidth, PanelHeight), GUI.skin.box);

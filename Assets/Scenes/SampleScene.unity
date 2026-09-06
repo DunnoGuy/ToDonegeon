@@ -16028,6 +16028,7 @@ GameObject:
   - component: {fileID: 1697926945}
   - component: {fileID: 1697926946}
   - component: {fileID: 1697926947}
+  - component: {fileID: 1697926948}
   m_Layer: 0
   m_Name: Dungeon Demo
   m_TagString: Untagged
@@ -16179,6 +16180,25 @@ MonoBehaviour:
   _lowHealthFraction: 0.3
   _camera: {fileID: 0}
   _heightBias: 0.5
+--- !u!114 &1697926948
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1697926939}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 865a4d142d54c3845b25c94e15f50c5c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ToDonegeon.View::ToDonegeon.View.MainMenu
+  _title: ToDonegeon
+  _backgroundColor: {r: 0.2264151, g: 0.1345825, b: 0.0501958, a: 1}
+  _buttonColor: {r: 0.95, g: 0.55, b: 0.1, a: 1}
+  _buttonHoverColor: {r: 1, g: 0.66, b: 0.2, a: 1}
+  _buttonTextColor: {r: 1, g: 1, b: 1, a: 1}
+  _titleColor: {r: 0.9716981, g: 0.06860793, b: 0, a: 1}
+  _aboutColor: {r: 0.95, g: 0.92, b: 0.85, a: 1}
 --- !u!1 &1941868603
 GameObject:
   m_ObjectHideFlags: 0
