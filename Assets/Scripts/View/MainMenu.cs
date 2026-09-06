@@ -57,6 +57,7 @@ namespace ToDonegeon.View
 
         private bool _showAbout;
         private bool _gameStarted;
+        private Vector2 _aboutScroll;
 
         private void Awake()
         {
@@ -140,8 +141,13 @@ namespace ToDonegeon.View
             GUILayout.BeginArea(new Rect(x, y, AboutWidth, AboutHeight));
             GUILayout.Label(_title, _titleStyle);
             GUILayout.Space(ButtonGap);
+
+            // scrolls so long text can never push the Back button out of the panel
+            _aboutScroll = GUILayout.BeginScrollView(_aboutScroll);
             GUILayout.Label(AboutText, _aboutStyle);
-            GUILayout.FlexibleSpace();
+            GUILayout.EndScrollView();
+
+            GUILayout.Space(ButtonGap);
             if (GUILayout.Button("Back", _buttonStyle, GUILayout.Height(ButtonHeight)))
                 _showAbout = false;
             GUILayout.EndArea();
