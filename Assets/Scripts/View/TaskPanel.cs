@@ -47,10 +47,11 @@ namespace ToDonegeon.View
         {
             if (MainMenu.IsOpen) return; // hidden behind the start menu
 
+            UiScale.Apply();
             bool docked = WindowDock.IsDocked;
             Rect area = docked
-                ? new Rect(0f, 0f, Screen.width, Screen.height)
-                : new Rect(Screen.width - PanelWidth - PanelMargin, PanelMargin, PanelWidth, Screen.height - 2f * PanelMargin);
+                ? new Rect(0f, 0f, UiScale.VirtualWidth, UiScale.VirtualHeight)
+                : new Rect(UiScale.VirtualWidth - PanelWidth - PanelMargin, PanelMargin, PanelWidth, UiScale.VirtualHeight - 2f * PanelMargin);
             ScreenGuiRegistry.Register(area);
 
             // an opaque fill covers the game so only the task list shows in the docked strip

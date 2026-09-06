@@ -85,6 +85,7 @@ namespace ToDonegeon.View
         private void OnGUI()
         {
             EnsureStyles();
+            UiScale.Apply();
 
             if (!IsOpen)
             {
@@ -93,7 +94,7 @@ namespace ToDonegeon.View
             }
 
             GUI.depth = -1000; // draw on top of any other panel
-            GUI.Box(new Rect(0f, 0f, Screen.width, Screen.height), GUIContent.none, _backgroundStyle);
+            GUI.Box(new Rect(0f, 0f, UiScale.VirtualWidth, UiScale.VirtualHeight), GUIContent.none, _backgroundStyle);
 
             if (_showAbout) DrawAbout();
             else DrawMenu();
@@ -104,7 +105,7 @@ namespace ToDonegeon.View
         {
             if (!_gameStarted || WindowDock.IsDocked) return;
 
-            float x = (Screen.width - OpenButtonWidth) * 0.5f;
+            float x = (UiScale.VirtualWidth - OpenButtonWidth) * 0.5f;
             var rect = new Rect(x, OpenButtonMargin, OpenButtonWidth, OpenButtonHeight);
             ScreenGuiRegistry.Register(rect); // so clicking it does not also move the player
             if (GUI.Button(rect, "Menu")) IsOpen = true;
@@ -112,10 +113,10 @@ namespace ToDonegeon.View
 
         private void DrawMenu()
         {
-            GUI.Label(new Rect(0f, Screen.height * 0.2f, Screen.width, TitleHeight), _title, _titleStyle);
+            GUI.Label(new Rect(0f, UiScale.VirtualHeight * 0.2f, UiScale.VirtualWidth, TitleHeight), _title, _titleStyle);
 
-            float x = (Screen.width - ButtonWidth) * 0.5f;
-            float y = Screen.height * 0.44f;
+            float x = (UiScale.VirtualWidth - ButtonWidth) * 0.5f;
+            float y = UiScale.VirtualHeight * 0.44f;
 
             string primary = _gameStarted ? "Resume" : "Start the game";
             if (GUI.Button(new Rect(x, y, ButtonWidth, ButtonHeight), primary, _buttonStyle))
@@ -135,10 +136,13 @@ namespace ToDonegeon.View
 
         private void DrawAbout()
         {
-            float x = (Screen.width - AboutWidth) * 0.5f;
-            float y = (Screen.height - AboutHeight) * 0.5f;
+            // kept within the virtual screen
+            float aboutWidth = Mathf.Min(AboutWidth, UiScale.VirtualWidth - 2f * ButtonGap);
+            float aboutHeight = Mathf.Min(AboutHeight, UiScale.VirtualHeight - 2f * ButtonGap);
+            float x = (UiScale.VirtualWidth - aboutWidth) * 0.5f;
+            float y = (UiScale.VirtualHeight - aboutHeight) * 0.5f;
 
-            GUILayout.BeginArea(new Rect(x, y, AboutWidth, AboutHeight));
+            GUILayout.BeginArea(new Rect(x, y, aboutWidth, aboutHeight));
             GUILayout.Label(_title, _titleStyle);
             GUILayout.Space(ButtonGap);
 

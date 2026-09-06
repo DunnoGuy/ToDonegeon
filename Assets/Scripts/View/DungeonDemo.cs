@@ -205,6 +205,7 @@ namespace ToDonegeon.View
             if (MainMenu.IsOpen) return; // hidden behind the start menu
             if (WindowDock.IsDocked) return; // only the task list shows while docked
 
+            UiScale.Apply();
             GUILayout.BeginArea(new Rect(PanelMargin, PanelMargin, PanelWidth, PanelHeight), GUI.skin.box);
 
             if (_dungeon != null)
@@ -233,8 +234,8 @@ namespace ToDonegeon.View
         // Centered overlay shown once an enemy turn kills the player
         private void DrawGameOver()
         {
-            float x = (Screen.width - GameOverWidth) * 0.5f;
-            float y = (Screen.height - GameOverHeight) * 0.5f;
+            float x = (UiScale.VirtualWidth - GameOverWidth) * 0.5f;
+            float y = (UiScale.VirtualHeight - GameOverHeight) * 0.5f;
             GUILayout.BeginArea(new Rect(x, y, GameOverWidth, GameOverHeight), GUI.skin.box);
             GUILayout.Label("You died.");
             GUILayout.Label("The dungeon claims another.");

@@ -165,6 +165,7 @@ namespace ToDonegeon.View
             };
             _style.normal.textColor = TextColor;
 
+            UiScale.Apply();
             Rect outer = TipRect();
             var inner = new Rect(
                 outer.x + BorderThickness, outer.y + BorderThickness,
@@ -184,7 +185,7 @@ namespace ToDonegeon.View
         // top-centre when the camera or player is unavailable.
         private Rect TipRect()
         {
-            float left = (Screen.width - TipWidth) * 0.5f;
+            float left = (UiScale.VirtualWidth - TipWidth) * 0.5f;
             float top = TopMargin;
 
             if (_camera == null) _camera = Camera.main;
@@ -193,14 +194,14 @@ namespace ToDonegeon.View
                 Vector3 screen = _camera.WorldToScreenPoint(_player.transform.position + Vector3.up * HeadWorldOffset);
                 if (screen.z > 0f)
                 {
-                    float headGuiY = Screen.height - screen.y;
-                    left = screen.x - TipWidth * 0.5f;
-                    top = Mathf.Lerp(headGuiY - TipHeight, TopMargin, _heightBias);
+                    Vector2 gui = UiScale.ScreenToGui(screen);
+                    left = gui.x - TipWidth * 0.5f;
+                    top = Mathf.Lerp(gui.y - TipHeight, TopMargin, _heightBias);
                 }
             }
 
-            left = Mathf.Clamp(left, SideMargin, Screen.width - TipWidth - SideMargin);
-            top = Mathf.Clamp(top, TopMargin, Screen.height - TipHeight);
+            left = Mathf.Clamp(left, SideMargin, UiScale.VirtualWidth - TipWidth - SideMargin);
+            top = Mathf.Clamp(top, TopMargin, UiScale.VirtualHeight - TipHeight);
             return new Rect(left, top, TipWidth, TipHeight);
         }
     }

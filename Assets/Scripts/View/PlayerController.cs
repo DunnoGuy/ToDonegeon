@@ -324,9 +324,10 @@ namespace ToDonegeon.View
             if (WindowDock.IsDocked) return; // only the task list shows while docked
             if (!_placed || _character == null) return;
 
+            UiScale.Apply();
             Inventory inventory = _character.Inventory;
             float height = HudHeight + inventory.Count * ItemRowHeight;
-            var rect = new Rect(HudMargin, Screen.height - height - HudMargin, HudWidth, height);
+            var rect = new Rect(HudMargin, UiScale.VirtualHeight - height - HudMargin, HudWidth, height);
             ScreenGuiRegistry.Register(rect);
 
             GUILayout.BeginArea(rect, GUI.skin.box);

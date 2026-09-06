@@ -21,7 +21,7 @@ namespace ToDonegeon.View
         
         public static bool IsPointerOverPanel(Vector2 pointer)
         {
-            var guiPoint = new Vector2(pointer.x, Screen.height - pointer.y);
+            Vector2 guiPoint = UiScale.PointerToGui(pointer);
             for (int i = 0; i < Rects.Count; i++)
                 if (Rects[i].Contains(guiPoint)) return true;
             return false;

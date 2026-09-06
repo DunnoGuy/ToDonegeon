@@ -40,6 +40,7 @@ namespace ToDonegeon.View
                 fontSize = 10
             };
 
+            UiScale.Apply();
             IReadOnlyList<Enemy> enemies = _spawner.Enemies;
             for (int i = 0; i < enemies.Count; i++)
             {
@@ -53,13 +54,14 @@ namespace ToDonegeon.View
         {
             Vector3 screen = _camera.WorldToScreenPoint(enemy.transform.position + Vector3.up * _heightOffset);
             if (screen.z <= 0f) return; // behind the camera
-            if (screen.x < -BarWidth || screen.x > Screen.width + BarWidth) return;
+            if (screen.x < 0f || screen.x > Screen.width) return;
 
             Health health = enemy.Character.Health;
             float fill = health.Max > 0 ? Mathf.Clamp01((float)health.Current / health.Max) : 0f;
 
-            float left = screen.x - BarWidth * 0.5f;
-            float top = Screen.height - screen.y - BarHeight;
+            Vector2 gui = UiScale.ScreenToGui(screen); // into the scaled GUI space
+            float left = gui.x - BarWidth * 0.5f;
+            float top = gui.y - BarHeight;
 
             Color previous = GUI.color;
             GUI.color = BackColor;
