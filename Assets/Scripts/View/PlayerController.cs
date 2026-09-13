@@ -43,6 +43,7 @@ namespace ToDonegeon.View
         private static readonly Color DamageFlashColor = new Color(1f, 0.3f, 0.3f, 1f);
         private static readonly Color DamageNumberColor = new Color(1f, 0.3f, 0.3f, 1f);
         private static readonly Color LowHpColor = new Color(0.9f, 0.2f, 0.2f, 1f);
+        private static readonly Color LowHpTint = new Color(1f, 0.4f, 0.4f, 1f);
 
         private DungeonGrid _grid;
         private Coord _cell;
@@ -311,11 +312,26 @@ namespace ToDonegeon.View
 
         private void UpdateFlash()
         {
-            if (_sprite == null || _flashElapsed >= FlashDuration) return;
+            if (_sprite == null) return;
+
+            // resting tint stays red while health is low; the hit flash blends back to it
+            Color resting = HealthIsLow() ? LowHpTint : _baseColor;
+            if (_flashElapsed >= FlashDuration)
+            {
+                _sprite.color = resting;
+                return;
+            }
 
             _flashElapsed += Time.deltaTime;
             float t = Mathf.Clamp01(_flashElapsed / FlashDuration);
-            _sprite.color = Color.Lerp(DamageFlashColor, _baseColor, t);
+            _sprite.color = Color.Lerp(DamageFlashColor, resting, t);
+        }
+
+        private bool HealthIsLow()
+        {
+            if (_character == null || !_character.IsAlive) return false;
+            int max = _character.Health.Max;
+            return max > 0 && (float)_character.Health.Current / max < LowHpFraction;
         }
 
         private void OnGUI()
